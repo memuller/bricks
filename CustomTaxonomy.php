@@ -105,13 +105,14 @@
 
 function get_tax_meta($term_taxonomy_id, $key = "", $single = false){
 	global $wpdb ;
+	$table = $wpdb->prefix . 'taxmeta' ;
 	if(!isset($term_taxonomy_id)) return null ;
 	if(empty($key)){
-		return $wpdb->get_results($wpdb->prepare("SELECT meta_key, meta_value from wp_taxmeta
+		return $wpdb->get_results($wpdb->prepare("SELECT meta_key, meta_value from $table
 			where term_taxonomy_id = %d", $term_taxonomy_id), OBJECT_K);
 	}
 
-	$values = $wpdb->get_col($wpdb->prepare("SELECT meta_value from wp_taxmeta 
+	$values = $wpdb->get_col($wpdb->prepare("SELECT meta_value from $table 
 		where term_taxonomy_id = %d and meta_key = %s", $term_taxonomy_id, $key));
 
 	return $single ? $values[0] : $values ;
@@ -119,12 +120,12 @@ function get_tax_meta($term_taxonomy_id, $key = "", $single = false){
 
 function update_tax_meta($term_taxonomy_id, $key, $value, $prev_value = null){
 	global $wpdb ;
-
-	$meta_id = $wpdb->get_col($wpdb->prepare("SELECT meta_id from wp_taxmeta
+	$table = $wpdb->prefix . 'taxmeta' ;
+	$meta_id = $wpdb->get_col($wpdb->prepare("SELECT meta_id from $table
 		where term_taxonomy_id = %d and meta_key = %s", $term_taxonomy_id, $key));
 	
 	if(empty($meta_id)){
-		$wpdb->insert('wp_taxmeta', array(
+		$wpdb->insert($table, array(
 			'term_taxonomy_id' => $term_taxonomy_id,
 			'meta_key' => $key,
 			'meta_value' => $value
@@ -137,7 +138,7 @@ function update_tax_meta($term_taxonomy_id, $key, $value, $prev_value = null){
 			$where_clausule = array_merge($where_clausule, array('meta_value' => $prev_value));
 			$where_format = array('%d', '%s');
 		}
-		return $wpdb->update('wp_taxmeta', 
+		return $wpdb->update($table, 
 			array('meta_value' => $value),
 			$where_clausule, "%s", $where_format
 		);
@@ -145,11 +146,11 @@ function update_tax_meta($term_taxonomy_id, $key, $value, $prev_value = null){
 
 
 	if(empty($key)){
-		return $wpdb->get_results($wpdb->prepare("SELECT meta_key, meta_value from wp_taxmeta
+		return $wpdb->get_results($wpdb->prepare("SELECT meta_key, meta_value from $table
 			where term_taxonomy_id = %d", $term_taxonomy_id), OBJECT_K);
 	}
 
-	$values = $wpdb->get_col($wpdb->prepare("SELECT meta_value from wp_taxmeta 
+	$values = $wpdb->get_col($wpdb->prepare("SELECT meta_value from $table 
 		where term_taxonomy_id = %d and meta_key = %s", $term_taxonomy_id, $key));
 
 	return $single ? $values[0] : $values ;
