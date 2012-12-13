@@ -46,7 +46,7 @@
 		static function styles(){}
 		static function scripts(){}
 		static function build(){
-			$class = get_called_class(); 
+			$class = get_called_class();
 			foreach ($class::$uses as $resource) {
 				if(strstr($resource, 'admin')){
 					add_action('admin_enqueue_scripts', "$class::$resource");

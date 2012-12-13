@@ -7,6 +7,7 @@
 		static $settings;
 		static $labels ;
 		static $applies_to = array('post');
+		static $parent = null ; 
 		static $tax = array();
 
 		public $term ;
@@ -19,6 +20,16 @@
 		static function build(){
 			$class = get_called_class();
 			add_action('init', $class.'::create_taxonomy' ) ;
+
+			if($class::$parent){
+				$parent_class = get_namespace($class) ."\\". ucfirst($class::$parent) ;
+				$class::$fields = array_merge(array( 
+					$class::$parent => array('type' => 'term_taxonomy', 'taxonomy' => $class::$parent, 'label' => $parent_class::$labels['singular_name'], 'description' => $parent_class::$labels['description'])),
+					$class::$fields 
+				);
+
+			}
+
 			foreach(array('add', 'edit') as $action){
 				add_action($class::$name.'_'.$action.'_form_fields', function() use($class,$action){
 					global $tag;
@@ -33,6 +44,13 @@
 				$term_taxonomy = get_term($term_id, $class::$name);
 				foreach ($_POST[$class::$name] as $key => $value) {
 					if(isset($class::$fields[$key])){
+						if($key == $class::$parent){
+							global $wpdb ;
+							$wpdb->update($wpdb->prefix.'term_taxonomy', 
+								array('parent' => intval($value)), 
+								array( 'term_taxonomy_id' => $term_taxonomy->term_taxonomy_id ) 
+							);
+						}
 						if(in_array($class::$fields[$key]['type'], array('geo', 'list', 'array')))
 							$value = maybe_serialize($value);
 						update_tax_meta($term_taxonomy->term_taxonomy_id, $key, $value);
@@ -44,6 +62,13 @@
 				$term_taxonomy = get_term($term_id, $class::$name);
 				foreach ($_POST[$class::$name] as $key => $value) {
 					if(isset($class::$fields[$key])){
+						if($key == $class::$parent){
+							global $wpdb ;
+							$wpdb->update($wpdb->prefix.'term_taxonomy', 
+								array('parent' => intval($value)), 
+								array( 'term_taxonomy_id' => $term_taxonomy->term_taxonomy_id ) 
+							);
+						}
 						if(in_array($class::$fields[$key]['type'], array('geo', 'list', 'array')))
 							$value = maybe_serialize($value);
 						update_tax_meta($term_taxonomy->term_taxonomy_id, $key, $value);
