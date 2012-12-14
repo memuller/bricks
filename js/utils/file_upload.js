@@ -37,8 +37,8 @@ jQuery(document).ready(function ($) {
 				uploadStatus = '<div class="no_image"><span class="file_link">' + html + '</span>&nbsp;&nbsp;&nbsp;<a href="#" class="cmb_remove_file_button" rel="' + formfield + '">Remove</a></div>';
 			}
 			$('#' + formfield).val(itemurl);
-			$('#' + formfield + '_id').val(itemid);
-			$('#' + formfield).siblings('.cmb_upload_status').slideDown().html(uploadStatus);
+			label = itemurl.split('/'); label = label[label.length-1];
+			$('#'+formfield).nextAll('.file_upload.button').val(label);
 			tb_remove();
 
 		} else {
