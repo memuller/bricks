@@ -113,6 +113,11 @@
 							wp_enqueue_style('jquery-datepick', $base::url('lib/js/jquery-datepick/smoothness.datepick.css'));
 							wp_enqueue_script('datepicker', $base::url('lib/js/utils/datepicker.js'), array('jquery-datepick-br'));
 						}
+						
+						if ('file' == $options['type']) {
+							wp_enqueue_script('file_upload', $base::url('lib/js/utils/file_upload.js'), array('jquery'));
+						}
+
 						if( 'geo' == $options['type']){
 							wp_enqueue_script('jquery-ui-autocomplete', array('jquery'));
 							wp_enqueue_script('gmaps-api', 'http://maps.google.com/maps/api/js?sensor=false&language=pt-BR', array('jquery')) ;
@@ -120,6 +125,49 @@
 						}
 					}
 				}
+
+			});
+			
+			add_action('admin_print_scripts', function(){
+				$screen = get_current_screen();
+				if($screen->base = 'media-upload' && isset($_GET['force_insert']) && $_GET['force_insert'] == 'true' ){ ?>
+					<script>
+						jQuery(function($){
+							$('#tab-gallery').hide();
+						});
+					</script>
+				<?php }
+			}, 99);
+
+			add_action('get_media_item_args', function($args){
+				
+				if ( isset( $_GET['force_insert'] ) && 'true' == $_GET['force_insert'] ){
+					$args['send'] = true; $args['delete'] = false; $args['toggle']= false; 
+				} 				
+				if ( isset( $_POST['attachment_id'] ) && '' != $_POST["attachment_id"] )
+					$args['send'] = true;	
+				?>
+				<script>
+					function get_parameter_by_name(name) {
+						name = name.replace(/[\[]/, "\\\[").replace(/[\]]/, "\\\]");
+						var regexS = "[\\?&]" + name + "=([^&#]*)";
+						var regex = new RegExp(regexS);
+						var results = regex.exec(window.location.href);
+						if(results == null)
+							return "";
+						else
+							return decodeURIComponent(results[1].replace(/\+/g, " "));
+					}
+					jQuery(function($){
+						if(get_parameter_by_name('force_insert') == 'true'){
+							$('.slidetoggle.describe tbody tr').not('.submit').hide();
+							$('.savesend .wp-post-thumbnail').hide();
+							$('.savesend .button').val(get_parameter_by_name('label'));
+						}
+					});
+				</script>
+				
+				<?php return $args ; 
 			});
 
 			if(!empty(static::$roles)){
