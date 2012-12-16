@@ -163,6 +163,7 @@
 							$('.slidetoggle.describe tbody tr').not('.submit').hide();
 							$('.savesend .wp-post-thumbnail').hide();
 							$('.savesend .button').val(get_parameter_by_name('label'));
+							$('.ml-submit').hide();
 						}
 					});
 				</script>
