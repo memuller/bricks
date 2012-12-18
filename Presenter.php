@@ -90,7 +90,7 @@
 	}
 
 	function debug($arg, $name=''){ 
-		if(function_exists('dbgx_trace_var')){
+		if(function_exists('dbgx_trace_var' || false)){
 			if('' == $name) $name = false ;
 			dbgx_trace_var($arg, $name);
 		} else {

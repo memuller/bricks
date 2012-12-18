@@ -8,6 +8,7 @@
 		static $labels ;
 		static $applies_to = array('post');
 		static $parent = null ; 
+		static $child = null ;
 		static $tax = array();
 
 		public $term ;
@@ -20,14 +21,23 @@
 		static function build(){
 			$class = get_called_class();
 			add_action('init', $class.'::create_taxonomy' ) ;
-
 			if($class::$parent){
 				$parent_class = get_namespace($class) ."\\". ucfirst($class::$parent) ;
 				$class::$fields = array_merge(array( 
 					$class::$parent => array('type' => 'term_taxonomy', 'taxonomy' => $class::$parent, 'label' => $parent_class::$labels['singular_name'], 'description' => $parent_class::$labels['description'])),
 					$class::$fields 
 				);
+				if(is_admin()){
+					add_filter('load-edit-tags.php', function() use($class) {
+						$screen = get_current_screen();
 
+						if($screen->id == 'edit-'.$class::$name && $screen->base == 'edit-tags'){
+							global $posts, $tags, $taxonomy;
+							debug($taxonomy);
+						}
+					});
+				}
+					
 			}
 
 			foreach(array('add', 'edit') as $action){
@@ -44,13 +54,6 @@
 				$term_taxonomy = get_term($term_id, $class::$name);
 				foreach ($_POST[$class::$name] as $key => $value) {
 					if(isset($class::$fields[$key])){
-						if($key == $class::$parent){
-							global $wpdb ;
-							$wpdb->update($wpdb->prefix.'term_taxonomy', 
-								array('parent' => intval($value)), 
-								array( 'term_taxonomy_id' => $term_taxonomy->term_taxonomy_id ) 
-							);
-						}
 						if(in_array($class::$fields[$key]['type'], array('geo', 'list', 'array')))
 							$value = maybe_serialize($value);
 						update_tax_meta($term_taxonomy->term_taxonomy_id, $key, $value);
@@ -62,13 +65,6 @@
 				$term_taxonomy = get_term($term_id, $class::$name);
 				foreach ($_POST[$class::$name] as $key => $value) {
 					if(isset($class::$fields[$key])){
-						if($key == $class::$parent){
-							global $wpdb ;
-							$wpdb->update($wpdb->prefix.'term_taxonomy', 
-								array('parent' => intval($value)), 
-								array( 'term_taxonomy_id' => $term_taxonomy->term_taxonomy_id ) 
-							);
-						}
 						if(in_array($class::$fields[$key]['type'], array('geo', 'list', 'array')))
 							$value = maybe_serialize($value);
 						update_tax_meta($term_taxonomy->term_taxonomy_id, $key, $value);
@@ -95,10 +91,17 @@
 			dbDelta($sql) ;
 		}
 
-		function __construct($name = false){
+		function __construct($arg = false){
 			global $tag; 
-			if($name){
-				$this->term = get_term_by('slug', $name, static::$name );
+			if($arg){
+				if (is_numeric($arg)) {
+					$this->term = get_term_by('id', $arg, static::$name);
+
+				}elseif(is_string($arg)) {
+					$this->term = get_term_by('slug', $arg, static::$name );
+				} else {
+					$this->term = $arg ; 
+				}
 			} else {
 				$this->term = &$tag;
 			}
@@ -106,7 +109,13 @@
 		}
 
 		function __get($name){
+
+			if(static::$child && static::$child == $name){
+				return $this->children();
+			}
+
 			if($name == 'id') $name = 'term_taxonomy_id';
+			
 			if(isset(static::$fields[$name])) {
 				$field = get_tax_meta($this->term->term_taxonomy_id, $name, true);
 				if(in_array(static::$fields[$name]['type'], array('geo', 'array', 'list'))) 
@@ -126,6 +135,22 @@
 				update_tax_meta($this->term['term_taxonomy_id'], $name, $value);
 			}
 		}
+
+		function children(){
+			if(static::$child){
+				$returnable = array(); $child_class = get_namespace(get_called_class()).'\\'. ucfirst(static::$child); 
+				global $wpdb ; $left = $wpdb->term_taxonomy ; $right = $wpdb->terms ; 
+				$results = $wpdb->get_results($wpdb->prepare("SELECT $left.*, $right.slug, $right.name 
+					from $left join $right on $left.term_id = $right.term_id 
+					where parent = %d ", $this->term_id)
+
+				);
+				foreach ($results as $result) {
+					$returnable[]= new $child_class($result);
+				}
+				return $returnable ; 
+			}
+		} 
 	}
 
 function get_tax_meta($term_taxonomy_id, $key = "", $single = false){
