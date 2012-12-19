@@ -36,7 +36,6 @@
 			add_action('plugins_loaded', function() use($base, $namespace) {
 				$prefix = strtolower(str_replace('\\', '', $namespace));
 				$db_version = get_option( $prefix.'_db_version', '0');
-
 				if( floatval($db_version) < $base::$db_version) {
 					if(! empty($base::$custom_taxonomies)) \CustomTaxonomy::build_database();
 						
@@ -50,7 +49,8 @@
 							remove_role($role);
 						}
 					}
-				}	
+					update_option($prefix.'_db_version', $base::$db_version);
+				}
 			} );
 
 			if(!empty(static::$restricted_menus)){
