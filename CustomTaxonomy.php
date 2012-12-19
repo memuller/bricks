@@ -139,10 +139,14 @@
 		function children(){
 			if(static::$child){
 				$returnable = array(); $child_class = get_namespace(get_called_class()).'\\'. ucfirst(static::$child); 
-				global $wpdb ; $left = $wpdb->term_taxonomy ; $right = $wpdb->terms ; 
-				$results = $wpdb->get_results($wpdb->prepare("SELECT $left.*, $right.slug, $right.name 
-					from $left join $right on $left.term_id = $right.term_id 
-					where parent = %d ", $this->term_id)
+				global $wpdb ; 
+				$tax = $wpdb->term_taxonomy ; $terms = $wpdb->terms ; $meta = $wpdb->prefix.'taxmeta' ;
+				$results = $wpdb->get_results($wpdb->prepare("SELECT $tax.*, $terms.slug, $terms.name 
+					from $tax 
+						join $terms on $tax.term_id = $terms.term_id
+						join $meta on $tax.term_taxonomy_id = $meta.term_taxonomy_id 
+
+					where $meta.meta_key = %d and $meta.meta_value = '%s' ", static::$child, $this->term_id)
 
 				);
 				foreach ($results as $result) {
