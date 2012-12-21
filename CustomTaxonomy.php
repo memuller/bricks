@@ -86,8 +86,6 @@
 				index term_taxonomy_id(term_taxonomy_id),
 				index meta_key(meta_key)  
 			);", $wpdb->prefix.'taxmeta' ) ;
-			
-			debug($sql, 'sql');
 			dbDelta($sql) ;
 		}
 
