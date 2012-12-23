@@ -10,7 +10,7 @@
 		static $parent = null ; 
 		static $child = null ;
 		static $tax = array();
-
+		static $fields = array();
 		public $term ;
 
 		static function create_taxonomy(){

@@ -78,6 +78,26 @@
 		printf( "<label %sfor='%s'>%s</label>", (null == $classes ? '' : "class=\"$classes\" " ),  $for, $label ) ;
 	}
 
+	function hidden_field($name, $value){
+		printf("<input type='hidden' name='%s' value='%s' >", $name, $value);	
+	}
+
+	function flash($arg){
+		global $flash; 
+		$flash = $arg ; 
+	}
+
+	function display_flash_messages($arg=null){
+		global $flash ; 
+		if($arg) $flash = $arg;
+		if(isset($flash)){
+			if(!is_array($flash)) $flash = array('type' => 'info', 'text' => $flash); ?>
+			<div id="message" class="<?php echo 'bellow-h2 '. ($flash['type'] == 'error' ? 'error' : 'updated') ?>">
+				<p><?php echo $flash['text'] ?></p>
+			</div>
+		<?php }
+	}
+
 	
 	function property_or_key($object, $arg){
 		return is_array($object) ? $object[$arg] : $object->$arg ;
@@ -96,7 +116,7 @@
 		} else {
 			if(! is_string($arg))
 				$arg = print_r($arg, true); 
-			trigger_error($name.': '.$arg, E_USER_WARNING);
+			trigger_error($name.':'.$arg, E_USER_WARNING);
 		}
 	}
 

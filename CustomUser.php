@@ -13,11 +13,27 @@
 		static $absent_fields = array();
 		static $fields = array();
 		
+		public $user ; 
+
+		function __construct($arg) {
+			$this->user = get_userdata($arg);
+		}
+
+		public function is_current(){
+			global $current_user ; 
+			return $this->user->ID == $current_user->ID ;
+		}
+
+		public function store(){
+			$result = query_posts(array('post_type' => 'store', 'author' =>$this->user->ID));
+			if($result && ! empty($result)){
+				return $result[0];
+			} else { return false ;}
+		}
 
 		static function build_database(){
 			remove_role(static::$name);
 			$inherits_from = get_role( static::$inherits_from ); 
-			
 			if( !empty(static::$capabilities) ){
 				$capabilities = array_merge($inherits_from->capabilities, static::$capabilities); 
 				
@@ -27,8 +43,9 @@
 				}
 
 			} else { $capabilities = $inherits_from->capabilities ; }
-			
+
 			add_role(static::$name, static::$label, $capabilities );
+			
 		}
 
 		static function build(){

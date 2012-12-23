@@ -72,13 +72,13 @@
 
 			add_action('save_post', function($post_id) use($base, $namespace) {
 				
-				if( defined(DOING_AUTOSAVE) && DOING_AUTOSAVE) return ;
+				if( defined('DOING_AUTOSAVE') && DOING_AUTOSAVE) return ;
 
 				if(isset($_POST['custom_single']) && in_array($_POST['custom_single'], $base::$custom_singles) ){
 					$class = $namespace.$_POST['custom_single']; $object = $_POST[$_POST['custom_single']];
 				}
 
-				if( in_array(ucfirst($_POST['post_type']), $base::$custom_posts )){
+				if( isset($_POST['post_type']) && in_array(ucfirst($_POST['post_type']), $base::$custom_posts )){
 					$object = $_POST[$_POST['post_type']]; $class = $namespace. ucfirst($_POST['post_type']);	
 				}
 
@@ -140,35 +140,35 @@
 			}, 99);
 
 			add_action('get_media_item_args', function($args){
-				
 				if ( isset( $_GET['force_insert'] ) && 'true' == $_GET['force_insert'] ){
 					$args['send'] = true; $args['delete'] = false; $args['toggle']= false; 
-				} 				
-				if ( isset( $_POST['attachment_id'] ) && '' != $_POST["attachment_id"] )
-					$args['send'] = true;	
-				?>
-				<script>
-					function get_parameter_by_name(name) {
-						name = name.replace(/[\[]/, "\\\[").replace(/[\]]/, "\\\]");
-						var regexS = "[\\?&]" + name + "=([^&#]*)";
-						var regex = new RegExp(regexS);
-						var results = regex.exec(window.location.href);
-						if(results == null)
-							return "";
-						else
-							return decodeURIComponent(results[1].replace(/\+/g, " "));
-					}
-					jQuery(function($){
-						if(get_parameter_by_name('force_insert') == 'true'){
-							$('.slidetoggle.describe tbody tr').not('.submit').hide();
-							$('.savesend .wp-post-thumbnail').hide();
-							$('.savesend .button').val(get_parameter_by_name('label'));
-							$('.ml-submit').hide();
+					if ( isset( $_POST['attachment_id'] ) && '' != $_POST["attachment_id"] )
+						$args['send'] = true;
+					?>
+					<script>
+						function get_parameter_by_name(name) {
+							name = name.replace(/[\[]/, "\\\[").replace(/[\]]/, "\\\]");
+							var regexS = "[\\?&]" + name + "=([^&#]*)";
+							var regex = new RegExp(regexS);
+							var results = regex.exec(window.location.href);
+							if(results == null)
+								return "";
+							else
+								return decodeURIComponent(results[1].replace(/\+/g, " "));
 						}
-					});
-				</script>
+						jQuery(function($){
+							if(get_parameter_by_name('force_insert') == 'true'){
+								$('.slidetoggle.describe tbody tr').not('.submit').hide();
+								$('.savesend .wp-post-thumbnail').hide();
+								$('.savesend .button').val(get_parameter_by_name('label'));
+								$('.ml-submit').hide();
+							}
+						});
+					</script> 				
+					
 				
-				<?php return $args ; 
+				
+				<?php } return $args ; 
 			});
 
 			if(!empty(static::$roles)){

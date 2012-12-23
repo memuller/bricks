@@ -6,9 +6,12 @@
 		public $post; 
 
 		function __get($name){
-			global $post ;
+			if(isset($this->post)){
+				$post = $this->post ;
+			} else { global $post ; }
 
 			if($name == 'id') $name = 'ID';
+			if($name == 'content') $name = 'post_content';
 
 			if(strstr($name, '-')){
 				list($name, $attribute) = explode('-', $name) ;
@@ -28,6 +31,12 @@
 				return $this->apply_filters($name) ;
 			} else {
 				return isset($this->post) ? $this->post->$name : $post->$name ; 
+			}
+		}
+
+		function __set($name, $value){
+			if(isset(static::$fields[$name])){
+				update_post_meta($this->post->ID, $name, $value) ;
 			}
 		}
 
@@ -52,9 +61,11 @@
 
 		function apply_filters($field){
 			switch (static::$fields[$field]['type']) {
+				case 'geo':
 				case 'array':
 					return maybe_unserialize($this->unfiltered_fields[$field]) ;
 					break;
+				case 'bool':
 				case 'integer':
 					return intval($this->unfiltered_fields[$field]) ;
 					break;
