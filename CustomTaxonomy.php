@@ -33,7 +33,6 @@
 
 						if($screen->id == 'edit-'.$class::$name && $screen->base == 'edit-tags'){
 							global $posts, $tags, $taxonomy;
-							debug($taxonomy);
 						}
 					});
 				}
