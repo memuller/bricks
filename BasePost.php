@@ -3,6 +3,7 @@
 
 		static $fields = array() ;
 		static $taxonomies = array();
+		public $unfiltered_fields = array();
 		public $post; 
 
 		function __get($name){
@@ -41,7 +42,6 @@
 		}
 
 		function __construct($post=false){
-			$this->unfiltered_fields = array();
 			if($post){
 				if(is_numeric($post)){
 					$post = get_post($post) ;
@@ -55,8 +55,7 @@
 				if(isset(static::$fields[$field_name])){
 					$this->unfiltered_fields[$field_name] = $field_values[0] ;
 				}
-			}
-			
+			}			
 		}
 
 		function apply_filters($field){
