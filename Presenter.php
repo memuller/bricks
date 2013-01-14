@@ -200,4 +200,13 @@ function somatic_attach_external_image( $url = null, $post_id = null, $thumb = n
     return $att_id;
 }
 
+	function GCD($a, $b) {  
+		while ($b != 0){ 
+			$remainder = $a % $b;  
+			$a = $b;  
+			$b = $remainder;  
+    	}  
+		return abs ($a);  
+    }
+
  ?>
