@@ -12,7 +12,7 @@
 		static function create_post_type(){
 			register_post_type( static::$name, static::$creation_fields ) ;
 		}		
-
+		
 		static function build(){
 			$class = get_called_class();
 			add_action('init', $class.'::create_post_type' ) ;

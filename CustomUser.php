@@ -1,6 +1,6 @@
 <?php
 
-	class CustomUser {
+	class CustomUser extends BaseItem {
 
 		static $name ;
 		static $label;
@@ -13,22 +13,18 @@
 		static $absent_fields = array();
 		static $fields = array();
 		
-		public $user ; 
+		static $meta_type = 'user' ; 
 
-		function __construct($arg) {
-			$this->user = get_userdata($arg);
-		}
+		
 
 		public function is_current(){
 			global $current_user ; 
 			return $this->user->ID == $current_user->ID ;
 		}
 
-		public function store(){
-			$result = query_posts(array('post_type' => 'store', 'author' =>$this->user->ID));
-			if($result && ! empty($result)){
-				return $result[0];
-			} else { return false ;}
+		public function get($post_type, $args=array()){
+			$default_args = array('post_type' => $post_type, 'author' =>$this->user->ID);
+			return query_posts(array_merge($default_args, $args));
 		}
 
 		static function build_database(){
