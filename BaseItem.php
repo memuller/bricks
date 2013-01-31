@@ -40,7 +40,7 @@
 
 		function __construct($base=false){
 			if($base){
-				if('post' == static::$meta_type && is_numeric($base)) $base = get_post($post) ;
+				if('post' == static::$meta_type && is_numeric($base)) $base = get_post($base) ;
 				if('user' == static::$meta_type){
 					if(is_numeric($base)){
 						$base = get_userdata($arg);
