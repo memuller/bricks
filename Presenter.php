@@ -60,6 +60,13 @@
 			$class = get_called_class(); $base = get_namespace($class) . '\Plugin';
 			return $base::url($arg);
 		}
+
+		static function render_404(){
+			status_header( 404 );
+			nocache_headers();
+			include(get_404_template());
+			exit;
+		}
 	}
 
 	function html_attributes($args){
