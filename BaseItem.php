@@ -4,6 +4,7 @@
 		static $fields = array() ;
 		public $unfiltered_fields = array();
 		public $base ; 
+		public $valid = true;
 		static $meta_type = 'post';
 
 		function __get($name){
@@ -51,7 +52,9 @@
 				$base = $GLOBALS[static::$meta_type] ;
 			}
 			$this->base = $base ;
-
+			if(!isset($this->base) || !$this->base ){ 
+				$this->valid = false ; return null ;
+			} 
 			$all_meta = 'post' == static::$meta_type ? get_post_custom($base->ID) : get_user_meta($base->ID) ; 
 			foreach($all_meta as $field_name => $field_values){
 				if(isset(static::$fields[$field_name])){
