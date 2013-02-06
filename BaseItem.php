@@ -25,10 +25,10 @@
 			}
 
 			if(isset(static::$fields[$name])) {
-				$this->unfiltered_fields[$name] = get_metadata(static::$meta_type, $post->ID, $name, true) ;
+				$this->unfiltered_fields[$name] = get_metadata(static::$meta_type, $this->base->ID, $name, true) ;
 				return $this->apply_filters($name) ;
 			} else {
-				return isset($this->base) ? $this->base->$name : $base->$name ; 
+				return $this->base->$name ; 
 			}
 		}
 
