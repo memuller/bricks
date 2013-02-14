@@ -2,6 +2,8 @@
 	
 	class Presenter {
 
+		static $ajax_actions = array();
+
 		static function render_to_string($view, $scope=array()){
 			global $plugin_haml_parser ; 
 			$path = get_called_class(); $path = explode('\\', $path); $path = $path[0];
@@ -46,12 +48,33 @@
 		static function styles(){}
 		static function scripts(){}
 		static function build(){
-			$class = get_called_class();
+			$class = get_called_class(); $namespace = get_namespace($class); 
+			$name = explode('\\', $class) ; $name = $name[sizeof($name)-1] ;
+			
+			# Loads scripts.
 			foreach ($class::$uses as $resource) {
 				if(strstr($resource, 'admin')){
 					add_action('admin_enqueue_scripts', "$class::$resource");
 				} else {
 					add_action('wp_enqueue_scripts', "$class::$resource" );
+				}
+			}
+			# Loads ajax actions.
+			$prefix =  strtolower($namespace).'-'.strtolower($name).'-';
+			foreach (static::$ajax_actions as $action => $logged) {
+				switch ($logged) {
+					case 'both':
+						$triggers = array('wp_ajax_', 'wp_ajax_nopriv_') ;
+					break;
+					case 'logged':
+						$triggers = array('wp_ajax_') ;
+					break;				
+					default:
+						$triggers = array('wp_ajax_nopriv_') ;
+					break;
+				}
+				foreach ($triggers as $ajax) {
+					add_action($ajax.$prefix.$action, "\\$class::$action");
 				}
 			}
 		}
