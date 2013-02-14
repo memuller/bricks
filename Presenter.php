@@ -3,6 +3,7 @@
 	class Presenter {
 
 		static $ajax_actions = array();
+		static $actions = array();
 
 		static function render_to_string($view, $scope=array()){
 			global $plugin_haml_parser ; 
@@ -77,6 +78,35 @@
 					add_action($ajax.$prefix.$action, "\\$class::$action");
 				}
 			}
+
+			# Loads actions.
+			if(!empty(static::$actions)){
+				add_action('template_redirect', function() use($class) {
+					global $wp_query;
+					foreach ($class::$actions as $action => $options) { 
+						if(isset($options['page'])) 
+							$options['pagename'] = $options['page'];
+						# method
+						if(isset($options['method'])){ 
+							$options['method'] = strtoupper($options['method']);
+							if($options['method'] != $_SERVER['REQUEST_METHOD'])
+								continue; 
+						}
+						# pagename
+						if(isset($options['pagename'])){
+							if($options['pagename'] != $wp_query->query['pagename']) 
+								continue;
+						}
+						# single
+						if(isset($options['single'])){ 
+							if(!is_single() && $options['single'] != $wp_query->query['post_type'])
+								continue; 
+						}
+						return $class::$action();
+					}
+				});	
+			}
+			
 		}
 
 		static function url($arg){
