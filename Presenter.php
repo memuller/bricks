@@ -4,6 +4,9 @@
 
 		static $ajax_actions = array();
 		static $actions = array();
+		static $includes = array();
+		static $scripts = array();
+		static $styles = array();
 
 		static function render_to_string($view, $scope=array()){
 			global $plugin_haml_parser ; 
@@ -49,6 +52,7 @@
 		static function styles(){}
 		static function scripts(){}
 		static function build(){
+			global $shit; $shit = array();
 			$class = get_called_class(); $namespace = get_namespace($class); 
 			$name = explode('\\', $class) ; $name = $name[sizeof($name)-1] ;
 			
@@ -59,6 +63,72 @@
 				} else {
 					add_action('wp_enqueue_scripts', "$class::$resource" );
 				}
+			}
+			if(!empty($class::$scripts) || !empty($class::$styles)){
+				add_action('init', function() use($class){
+					global $shit;
+					foreach (array('scripts', 'styles') as $resource) {
+						foreach ($class::$$resource as $name => $options) {
+							$default_args = array('dependencies' => array('jquery'), 'version' => false, 'in_footer' => false);
+							if('/' == $options['source'][0]){
+								if(isset($options['from']) &&  'plugin' == $options['from']){
+									$options['source'] = $class::url($options['source']);
+								} else {
+									$options['source'] = get_stylesheet_directory_uri().$options['source'];
+								}
+							}
+							$options = array_merge($default_args, $options);
+							$args = array(
+								$name, $options['source'], $options['dependencies'], 
+								$options['version'], $options['in_footer']);
+							#if($args[0] != 'gmaps-api') die(print_r($args, true));
+							$function = 'scripts' == $resource ? 'wp_register_script' : 'wp_register_style' ;
+							array_push($GLOBALS['shit'], $args);
+							call_user_func_array($function, $args);
+							
+						}				
+					}
+				});
+			}
+			if(!empty(static::$includes)){
+				add_action('wp_enqueue_scripts', function() use($class) {
+					global $wp_query;
+					foreach($class::$includes as $resource){
+						$condition = array_keys($resource)[0]; $value = $resource[$condition];
+						$valid = true; 
+						switch ($condition) {
+							case 'page':
+								if(!is_page($value)) $valid = false;
+							break;
+							
+							case 'single':
+								if(!is_single()){ $valid = false; break; }
+								if('any' != $value && ! $value == $wp_query->query['post_type']) $valid = false;
+							break;
+
+							case 'archive':
+								if(!is_archive()){ $valid = false; break; }
+								if('any' != $value && ! $value == $wp_query->query['post_type']) $valid = false;
+							break;
+
+							case 'is':
+								if('single' == $value && !is_single()){ $valid = false; break; }
+								if('archive' == $value && !is_archive()){ $valid = false; break; }
+								if('home' == $value && !is_home()){ $valid = false; break; }
+							break;
+						}
+						if(!$valid) continue;
+						foreach (array('script', 'style') as $type) {
+							$list = $type.'s';
+							if(isset($resource[$list])){
+								foreach ($resource[$list] as $asset) {
+									$class::recursive_enqueue($type, $asset);
+								}
+							}
+						}
+					}
+				});
+				
 			}
 			# Loads ajax actions.
 			$prefix =  strtolower($namespace).'-'.strtolower($name).'-';
@@ -102,6 +172,11 @@
 							if(!is_single() && $options['single'] != $wp_query->query['post_type'])
 								continue; 
 						}
+						# archive
+						if(isset($options['archive'])){ 
+							if(!is_archive() && $options['archive'] != $wp_query->query['post_type'])
+								continue; 
+						}
 						return $class::$action();
 					}
 				});	
@@ -119,6 +194,16 @@
 			nocache_headers();
 			include(get_404_template());
 			exit;
+		}
+
+		static function recursive_enqueue($type, $name){
+			$function = $type == 'script' ? 'wp_enqueue_script' : 'wp_enqueue_style';
+			$function($name);
+			if(!empty(static::$$type[$name]['dependencies'])){
+				foreach (static::$$type[$name]['dependencies'] as $dep) {
+					if(!wp_script_is($dep,'queue')) recursive_enqueue($type, $dep);
+				}
+			}
 		}
 	}
 
@@ -179,6 +264,11 @@
 			trigger_error($name.':'.$arg, E_USER_WARNING);
 		}
 	}
+
+	function loopable($arg){
+		return !is_array($arg) ? array($arg) : $arg ;
+	}
+	
 	/**
  * Download an image from the specified URL and attach it to a post.
  * Modified version of core function media_sideload_image() in /wp-admin/includes/media.php  (which returns an html img tag instead of attachment ID)
