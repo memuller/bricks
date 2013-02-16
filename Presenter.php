@@ -198,8 +198,8 @@
 
 		static function recursive_enqueue($type, $name){
 			$function = $type == 'script' ? 'wp_enqueue_script' : 'wp_enqueue_style';
-			$function($name);
-			if(!empty(static::$$type[$name]['dependencies'])){
+			$function($name); $type.='s'; $list = static::$$type ; 
+			if(isset(static::$$type[$name]['dependencies'])){
 				foreach (static::$$type[$name]['dependencies'] as $dep) {
 					if(!wp_script_is($dep,'queue')) recursive_enqueue($type, $dep);
 				}
@@ -268,7 +268,6 @@
 	function loopable($arg){
 		return !is_array($arg) ? array($arg) : $arg ;
 	}
-	
 	/**
  * Download an image from the specified URL and attach it to a post.
  * Modified version of core function media_sideload_image() in /wp-admin/includes/media.php  (which returns an html img tag instead of attachment ID)
