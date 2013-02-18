@@ -198,10 +198,10 @@
 
 		static function recursive_enqueue($type, $name){
 			$function = $type == 'script' ? 'wp_enqueue_script' : 'wp_enqueue_style';
-			$function($name); $type.='s'; $list = static::$$type ; 
-			if(isset(static::$$type[$name]['dependencies'])){
-				foreach (static::$$type[$name]['dependencies'] as $dep) {
-					if(!wp_script_is($dep,'queue')) recursive_enqueue($type, $dep);
+			$function($name); $pluralized = $type.'s'; $list = static::$$pluralized ; 
+			if(!empty($list[$name]['dependencies'])){
+				foreach ($list[$name]['dependencies'] as $dep) {
+					if(!wp_script_is($dep,'queue')) static::recursive_enqueue($type, $dep);
 				}
 			}
 		}
