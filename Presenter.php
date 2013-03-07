@@ -94,16 +94,12 @@
 						$class::enqueue_scripts();
 					});
 				} else {
-
-					if(strncmp($_SERVER['REQUEST_URI'], '/wp-login.php', strlen('/wp-login.php'))){
-						add_action('login_enqueue_scripts', function() use($class){
-							$class::enqueue_scripts();
-						});
-					} else {
-						add_action('wp_enqueue_scripts', function() use($class) {
-							$class::enqueue_scripts();
-						});
-					}
+					add_action('login_enqueue_scripts', function() use($class){
+						$class::enqueue_scripts();
+					});						
+					add_action('wp_enqueue_scripts', function() use($class) {		
+						$class::enqueue_scripts();
+					});
 									
 				}
 				
