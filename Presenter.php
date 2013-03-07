@@ -66,7 +66,6 @@
 			}
 			if(!empty($class::$scripts) || !empty($class::$styles)){
 				add_action('init', function() use($class){
-					global $shit;
 					foreach (array('scripts', 'styles') as $resource) {
 						foreach ($class::$$resource as $name => $options) {
 							$default_args = array('dependencies' => array('jquery'), 'version' => false, 'in_footer' => false);
@@ -81,7 +80,6 @@
 							$args = array(
 								$name, $options['source'], $options['dependencies'], 
 								$options['version'], $options['in_footer']);
-							#if($args[0] != 'gmaps-api') die(print_r($args, true));
 							$function = 'scripts' == $resource ? 'wp_register_script' : 'wp_register_style' ;
 							array_push($GLOBALS['shit'], $args);
 							call_user_func_array($function, $args);
@@ -90,44 +88,24 @@
 					}
 				});
 			}
-			if(!empty(static::$includes)){
-				add_action('wp_enqueue_scripts', function() use($class) {
-					global $wp_query;
-					foreach($class::$includes as $resource){
-						$condition = array_keys($resource)[0]; $value = $resource[$condition];
-						$valid = true; 
-						switch ($condition) {
-							case 'page':
-								if(!is_page($value)) $valid = false;
-							break;
-							
-							case 'single':
-								if(!is_single()){ $valid = false; break; }
-								if('any' != $value && ! $value == $wp_query->query['post_type']) $valid = false;
-							break;
+			if(!empty($class::$includes)){
+				if(is_admin()){
+					add_action('admin_enqueue_scripts', function() use($class) {
+						$class::enqueue_scripts();
+					});
+				} else {
 
-							case 'archive':
-								if(!is_archive()){ $valid = false; break; }
-								if('any' != $value && ! $value == $wp_query->query['post_type']) $valid = false;
-							break;
-
-							case 'is':
-								if('single' == $value && !is_single()){ $valid = false; break; }
-								if('archive' == $value && !is_archive()){ $valid = false; break; }
-								if('home' == $value && !is_home()){ $valid = false; break; }
-							break;
-						}
-						if(!$valid) continue;
-						foreach (array('script', 'style') as $type) {
-							$list = $type.'s';
-							if(isset($resource[$list])){
-								foreach ($resource[$list] as $asset) {
-									$class::recursive_enqueue($type, $asset);
-								}
-							}
-						}
+					if(strncmp($_SERVER['REQUEST_URI'], '/wp-login.php', strlen('/wp-login.php'))){
+						add_action('login_enqueue_scripts', function() use($class){
+							$class::enqueue_scripts();
+						});
+					} else {
+						add_action('wp_enqueue_scripts', function() use($class) {
+							$class::enqueue_scripts();
+						});
 					}
-				});
+									
+				}
 				
 			}
 			# Loads ajax actions.
@@ -196,16 +174,77 @@
 			exit;
 		}
 
-		static function recursive_enqueue($type, $name){
-			$function = $type == 'script' ? 'wp_enqueue_script' : 'wp_enqueue_style';
-			$function($name); $pluralized = $type.'s'; $list = static::$$pluralized ; 
+		static function recursive_enqueue($type, $name, $kind='main'){
+			$function = $type == 'script' ? 'wp_enqueue_script' : 'wp_enqueue_style';	
+			$function($name); 
+			$pluralized = $type.'s'; $list = static::$$pluralized ;
 			if(!empty($list[$name]['dependencies'])){
 				foreach ($list[$name]['dependencies'] as $dep) {
-					if(!wp_script_is($dep,'queue')) static::recursive_enqueue($type, $dep);
+					if(!wp_script_is($dep,'queue')) static::recursive_enqueue($type, $dep, $kind);
+				}
+			}	
+			
+		}
+
+		static function enqueue_scripts(){
+			global $wp_query;
+			foreach(static::$includes as $resource){
+				$condition = array_keys($resource)[0]; $value = $resource[$condition];
+				$valid = true; $kind = 'main';
+				switch ($condition) {
+					case 'page':
+						if(!is_page($value)) $valid = false;
+					break;
+					
+					case 'single':
+						if(!is_single()){ $valid = false; break; }
+						if('any' != $value && ! $value == $wp_query->query['post_type']) $valid = false;
+					break;
+
+					case 'archive':
+						if(!is_archive()){ $valid = false; break; }
+						if('any' != $value && ! $value == $wp_query->query['post_type']) $valid = false;
+					break;
+
+					case 'is':
+						if('single' == $value && !is_single()){ $valid = false; break; }
+						if('archive' == $value && !is_archive()){ $valid = false; break; }
+						if('home' == $value && !is_home()){ $valid = false; break; }
+						if('login' == $value){
+							if( strncmp($_SERVER['REQUEST_URI'], '/wp-login.php', strlen('/wp-login.php')) ){
+								$kind = 'login'; 
+							} else { $valid = false ; break; }
+						}
+					break;
+
+				}
+				if(!$valid) continue;
+				foreach (array('script', 'style') as $type) {
+					$list = $type.'s';
+					if(isset($resource[$list])){
+						foreach ($resource[$list] as $asset) {
+							static::recursive_enqueue($type, $asset, $kind);
+						}
+					}
 				}
 			}
 		}
 	}
+
+	function wp_enqueue_login_script($script){
+		$path = $GLOBAL['wp_scripts']->registered[$script]['src'];
+		add_action('login_enqueue_scripts', function(){
+			print("<script id='$script' src='$path' />");
+		});
+	}
+
+	function wp_enqueue_login_style($script){
+		$path = $GLOBAL['wp_scripts']->registered[$script]['src'];
+		add_action( 'login_enqueue_scripts', function(){
+			print("<link rel='stylesheet' id='$script'  href='$src' type='text/css' media='all' />");
+		});
+	}
+
 
 	function html_attributes($args){
 		$kv_pairs = "" ;
