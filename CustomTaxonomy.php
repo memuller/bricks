@@ -57,7 +57,8 @@
 							$value = maybe_serialize($value);
 						update_tax_meta($term_taxonomy->term_taxonomy_id, $key, $value);
 					}
-				}
+				} 
+				#$term = new $class($term_taxonomy->term_taxonomy_id); die(print_r($term->zones, true));
 			});
 
 			add_action('created_'.$class::$name, function($term_id) use($class){
@@ -138,14 +139,13 @@
 				$returnable = array(); $child_class = get_namespace(get_called_class()).'\\'. ucfirst(static::$child); 
 				global $wpdb ; 
 				$tax = $wpdb->term_taxonomy ; $terms = $wpdb->terms ; $meta = $wpdb->prefix.'taxmeta' ;
-				$results = $wpdb->get_results($wpdb->prepare("SELECT $tax.*, $terms.slug, $terms.name 
+				$sql = $wpdb->prepare("SELECT $tax.*, $terms.slug, $terms.name 
 					from $tax 
 						join $terms on $tax.term_id = $terms.term_id
 						join $meta on $tax.term_taxonomy_id = $meta.term_taxonomy_id 
 
-					where $meta.meta_key = %d and $meta.meta_value = '%s' ", static::$child, $this->term_id)
-
-				);
+					where $meta.meta_key = %s and $meta.meta_value = '%d' ", static::$name, $this->term_id);
+				$results = $wpdb->get_results($sql);
 				foreach ($results as $result) {
 					$returnable[]= new $child_class($result);
 				}
@@ -183,16 +183,19 @@ function update_tax_meta($term_taxonomy_id, $key, $value, $prev_value = null){
 		));
 		return $wpdb->insert_id;
 	} else {
-		$where_clausule = array('term_taxonomy_id' => $term_taxonomy_id);
-		$where_format = "%d";
+		$where_clausule = array('term_taxonomy_id' => $term_taxonomy_id, 'meta_key' => $key);
+		$where_format = array("%d", "%s");
 		if($prev_value){
 			$where_clausule = array_merge($where_clausule, array('meta_value' => $prev_value));
-			$where_format = array('%d', '%s');
+			$where_format[]= "%s";
 		}
-		return $wpdb->update($table, 
+		
+		$returnable =  $wpdb->update($table, 
 			array('meta_value' => $value),
 			$where_clausule, "%s", $where_format
 		);
+
+		return $returnable;
 	}
 
 
