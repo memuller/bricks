@@ -2,6 +2,7 @@
 	
 	class Presenter {
 
+		static $uses = array();
 		static $ajax_actions = array();
 		static $actions = array();
 		static $includes = array();
@@ -52,9 +53,9 @@
 		static function styles(){}
 		static function scripts(){}
 		static function build(){
-			global $shit; $shit = array();
 			$class = get_called_class(); $namespace = get_namespace($class); 
 			$name = explode('\\', $class) ; $name = $name[sizeof($name)-1] ;
+			$base = $namespace . '\Plugin';
 			
 			# Loads scripts.
 			foreach ($class::$uses as $resource) {
@@ -81,7 +82,6 @@
 								$name, $options['source'], $options['dependencies'], 
 								$options['version'], $options['in_footer']);
 							$function = 'scripts' == $resource ? 'wp_register_script' : 'wp_register_style' ;
-							array_push($GLOBALS['shit'], $args);
 							call_user_func_array($function, $args);
 							
 						}				
@@ -106,7 +106,7 @@
 			}
 			# Loads ajax actions.
 			$prefix =  strtolower($namespace).'-'.strtolower($name).'-';
-			foreach (static::$ajax_actions as $action => $logged) {
+			foreach ($class::$ajax_actions as $action => $logged) {
 				switch ($logged) {
 					case 'both':
 						$triggers = array('wp_ajax_', 'wp_ajax_nopriv_') ;
@@ -122,39 +122,13 @@
 					add_action($ajax.$prefix.$action, "\\$class::$action");
 				}
 			}
-
+			global $shit ; $shit = array();
 			# Loads actions.
-			if(!empty(static::$actions)){
-				add_action('template_redirect', function() use($class) {
-					global $wp_query;
-					foreach ($class::$actions as $action => $options) { 
-						if(isset($options['page'])) 
-							$options['pagename'] = $options['page'];
-						# method
-						if(isset($options['method'])){ 
-							$options['method'] = strtoupper($options['method']);
-							if($options['method'] != $_SERVER['REQUEST_METHOD'])
-								continue; 
-						}
-						# pagename
-						if(isset($options['pagename'])){
-							if($options['pagename'] != $wp_query->query['pagename']) 
-								continue;
-						}
-						# single
-						if(isset($options['single'])){ 
-							if(!is_single() && $options['single'] != $wp_query->query['post_type'])
-								continue; 
-						}
-						# archive
-						if(isset($options['archive'])){ 
-							if(!is_archive() && $options['archive'] != $wp_query->query['post_type'])
-								continue; 
-						}
-						return $class::$action();
-					}
-				});	
+			if(!empty($class::$actions)){
+				$base::$actions = array_merge($base::$actions, array($name => $class::$actions));
+					
 			}
+
 			
 		}
 

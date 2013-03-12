@@ -9,7 +9,7 @@
 		static $custom_singles = array();
 		static $custom_taxonomies = array();
 		static $restricted_menus = array();
-
+		static $actions = array();
 		static $roles = array(
 		);
 
@@ -32,6 +32,40 @@
 
 			}
 			require static::path('presenters/Base.php'); 
+
+			add_action('template_redirect', function() use ($base, $namespace){
+				global $wp_query;
+				foreach($base::$actions as $class => $actions){
+					foreach ($actions as $action => $options) {
+						if(isset($options['page'])) 
+							$options['pagename'] = $options['page'];
+						# method
+						if(isset($options['method'])){ 
+							$options['method'] = strtoupper($options['method']);
+							if($options['method'] != strtoupper($_SERVER['REQUEST_METHOD']))
+								continue; 
+						}
+						# pagename
+						if(isset($options['pagename'])){
+							if($options['pagename'] != $wp_query->query['pagename']) 
+								continue;
+						}
+						# single
+						if(isset($options['single'])){ 
+							if(!is_single() && $options['single'] != $wp_query->query['post_type'])
+								continue; 
+						}
+						# archive
+						if(isset($options['archive'])){ 
+							if(!is_archive() && $options['archive'] != $wp_query->query['post_type'])
+								continue; 
+						}
+						$class = $namespace.'Presenters\\'.$class;
+						$class::$action();
+					}
+				}
+				
+			});
 
 			add_action('plugins_loaded', function() use($base, $namespace) {
 				$prefix = strtolower(str_replace('\\', '', $namespace));
