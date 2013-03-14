@@ -180,6 +180,7 @@
 						if('single' == $value && !is_single()){ $valid = false; break; }
 						if('archive' == $value && !is_archive()){ $valid = false; break; }
 						if('home' == $value && !is_home()){ $valid = false; break; }
+						if('search' == $value && !is_search()){ $valid = false; break; }
 						if('login' == $value){
 							if( strncmp($_SERVER['REQUEST_URI'], '/wp-login.php', strlen('/wp-login.php')) ){
 								$kind = 'login'; 
