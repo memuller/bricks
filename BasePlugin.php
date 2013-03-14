@@ -47,16 +47,19 @@
 						}
 						# pagename
 						if(isset($options['pagename'])){
+							if(!isset($wp_query->query['pagename'])) continue; 
 							if($options['pagename'] != $wp_query->query['pagename']) 
 								continue;
 						}
 						# single
-						if(isset($options['single'])){ 
+						if(isset($options['single'])){
+							if(!isset($wp_query->query['post_type'])) continue;  
 							if(!is_single() && $options['single'] != $wp_query->query['post_type'])
 								continue; 
 						}
 						# archive
-						if(isset($options['archive'])){ 
+						if(isset($options['archive'])){
+							if(!isset($wp_query->query['archive'])) continue; 
 							if(!is_archive() && $options['archive'] != $wp_query->query['post_type'])
 								continue; 
 						}
