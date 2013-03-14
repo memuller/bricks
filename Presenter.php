@@ -176,11 +176,18 @@
 						if('any' != $value && ! $value == $wp_query->query['post_type']) $valid = false;
 					break;
 
+					case 'taxonomy':
+						if(!is_tax($value)) $valid = false;
+					break;
+
 					case 'is':
 						if('single' == $value && !is_single()){ $valid = false; break; }
 						if('archive' == $value && !is_archive()){ $valid = false; break; }
 						if('home' == $value && !is_home()){ $valid = false; break; }
 						if('search' == $value && !is_search()){ $valid = false; break; }
+						if('taxonomy' == $value && !is_tax()){ $valid = false; break; }
+						if('tag' == $value && !is_tag()){ $valid = false; break; }
+						if('category' == $value && !is_category()){ $valid = false; break; }
 						if('login' == $value){
 							if( strncmp($_SERVER['REQUEST_URI'], '/wp-login.php', strlen('/wp-login.php')) ){
 								$kind = 'login'; 
