@@ -3,6 +3,7 @@
 	class BasePlugin {
 
 		static $db_version = 0 ;
+		static $presenters = array('Base');
 		static $custom_posts = array();
 		static $custom_users = array();
 		static $custom_classes = array();
@@ -31,7 +32,11 @@
 				$class::build();
 
 			}
-			require static::path('presenters/Base.php'); 
+			foreach (static::$presenters as $presenter) {
+				require(static::path('presenters/'.$presenter.'.php'));
+				$class = $namespace.'Presenters\\'.ucfirst($presenter);
+				$class::build();
+			} 
 
 			add_action('template_redirect', function() use ($base, $namespace){
 				global $wp_query;
