@@ -8,7 +8,8 @@
 		static $collumns = array();
 		static $actions = array();
 		static $absent_collumns = array();
-		static $absent_actions = array('quick-edit');		
+		static $absent_actions = array('quick-edit');
+		static $rateable = false ; 		
 		static function create_post_type(){
 			register_post_type( static::$name, static::$creation_fields ) ;
 		}		
@@ -19,7 +20,10 @@
 			
 			$class = get_called_class();
 			add_action('init', $class.'::create_post_type' ) ;
-			$editable_by = $class::$editable_by ; $fields = $class::$fields ; 
+			$editable_by = $class::$editable_by ; $fields = $class::$fields ;
+
+			//
+
 			// Renders fields on an advanced form, if needed.
 			if(in_array( 'form_advanced', array_keys(static::$editable_by) )){
 				$fields_to_use = array();
@@ -123,6 +127,33 @@
 					});
 				}
 			}
+
+			if(static::$rateable){
+				static::$fields = array_merge(static::$fields, array(
+					'ratings_number' => array('type' => 'integer', 'label' => 'Number of Ratings', 'default' => 0),
+					'ratings_positive' => array('type' => 'integer', 'label' => 'Number of Negative Ratings', 'default' => 0),
+					'ratings_negative' => array('type' => 'integer', 'label' => 'Number of Positive Ratings', 'default' => 0),
+					'rating' => array('type' => 'integer', 'label' => 'Rating', 'default' => 0),
+					'rated_by' => array('type' => 'array', 'label' => 'Users that rated this', 'default' => array())
+				));
+			}
+
+		}
+
+		public function rate($value){
+			if(!static::$rateable) return false ;
+			if(is_user_logged_in()){
+				$user = wp_get_current_user();
+				if(in_array($user->ID, $this->rated_by)) return false ;
+				$this->rated_by = array_merge($this->rated_by, (array) $user->ID);
+				
+			}
+			$value = (int) $value ; 
+			$this->rating = $this->rating + $value ;
+			$this->ratings_number = $this->ratings_number +1 ;
+			if($value > 0){
+				$this->ratings_positive = $this->ratings_positive +1 ;
+			} else { $this->ratings_negative = $this->ratings_negative +1 ; }
 
 		}
 		
