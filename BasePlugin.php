@@ -68,7 +68,7 @@
 							if(!is_archive() && $options['archive'] != $wp_query->query['post_type'])
 								continue; 
 						}
-						$class = $namespace.'Presenters\\'.$class;
+						$class =  strpos($class, 'Presenters') === false ? $namespace.'Presenters\\'.$class : $class ;
 						$class::$action();
 					}
 				}
