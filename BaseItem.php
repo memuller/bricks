@@ -64,10 +64,14 @@
 		}
 
 		function apply_filters($field){
+			if(!isset($this->unfiltered_fields[$field])){ 
+				if(isset(static::$fields[$field]['default'])) 
+					$this->unfiltered_fields[$field] = static::$fields[$field]['default'] ; 
+			}
 			switch (static::$fields[$field]['type']) {
 				case 'geo':
 				case 'array':
-					return maybe_unserialize($this->unfiltered_fields[$field]) ;
+					return (array) maybe_unserialize($this->unfiltered_fields[$field]) ;
 					break;
 				case 'bool':
 				case 'integer':
