@@ -142,9 +142,13 @@
 
 		public function rate($value){
 			if(!static::$rateable) return false ;
+			if(static::$rateable === true) static::$rateable = array();
+			static::$rateable = array_merge(array('self_rateable' => false, 'repeatable' => false));
+
 			if(is_user_logged_in()){
 				$user = wp_get_current_user();
-				if(in_array($user->ID, $this->rated_by)) return false ;
+				if(!static::$rateable['self_rateable'] && $this->post_author == $user->ID) return false ; 
+				if(!static::$rateable['repeatable'] && in_array($user->ID, $this->rated_by)) return false ;
 				$this->rated_by = array_merge($this->rated_by, (array) $user->ID);
 				
 			}
