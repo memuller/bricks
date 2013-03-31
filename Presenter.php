@@ -156,6 +156,11 @@
 			
 		}
 
+		static function localize_script($asset){
+			$class = get_called_class(); $namespace = get_namespace($class) ;
+			wp_localize_script($asset, $namespace, static::$scripts[$asset]['localization']);
+		}
+
 		static function enqueue_scripts(){
 			global $wp_query;
 			foreach(static::$includes as $resource){
@@ -202,6 +207,8 @@
 					if(isset($resource[$list])){
 						foreach ($resource[$list] as $asset) {
 							static::recursive_enqueue($type, $asset, $kind);
+							if('script' == $type && isset(static::$scripts[$asset]['localization'])) 
+								static::localize_script($asset);
 						}
 					}
 				}

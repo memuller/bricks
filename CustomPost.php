@@ -143,7 +143,7 @@
 		public function rate($value){
 			if(!static::$rateable) return false ;
 			if(static::$rateable === true) static::$rateable = array();
-			static::$rateable = array_merge(array('self_rateable' => false, 'repeatable' => false));
+			static::$rateable = array_merge(array('self_rateable' => false, 'repeatable' => false), static::$rateable);
 
 			if(is_user_logged_in()){
 				$user = wp_get_current_user();
