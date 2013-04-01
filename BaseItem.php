@@ -35,6 +35,7 @@
 		function __set($name, $value){
 			if(isset(static::$fields[$name])){
 				update_metadata(static::$meta_type, $this->base->ID, $name, $value) ;
+				$this->unfiltered_fields[$name] = $value ;
 			}
 		}
 
