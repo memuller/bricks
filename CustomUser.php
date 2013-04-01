@@ -23,7 +23,7 @@
 		}
 
 		public function get($post_type, $args=array()){
-			$default_args = array('post_type' => $post_type, 'author' =>$this->user->ID);
+			$default_args = array('post_type' => $post_type, 'author' =>$this->base->ID);
 			return query_posts(array_merge($default_args, $args));
 		}
 
