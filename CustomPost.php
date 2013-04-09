@@ -158,7 +158,7 @@
 			if($value > 0){
 				$this->ratings_positive = $this->ratings_positive +1 ;
 			} else { $this->ratings_negative = $this->ratings_negative +1 ; }
-
+			return true ; 
 		}
 		
 	}
