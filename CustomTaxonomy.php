@@ -82,9 +82,9 @@
 				term_taxonomy_id bigint(20) unsigned not null,
 				meta_key varchar(255) null,
 				meta_value varchar(255) null,
-				primary key meta_id(meta_id),
-				index term_taxonomy_id(term_taxonomy_id),
-				index meta_key(meta_key)  
+				primary key meta_id (meta_id),
+				key term_taxonomy_id (term_taxonomy_id),
+				key meta_key (meta_key)  
 			);", $wpdb->prefix.'taxmeta' ) ;
 			dbDelta($sql) ;
 		}
