@@ -41,6 +41,13 @@
 				$class::build();
 			} 
 
+			add_filter('query_vars', function($vars) use($base){
+				foreach ($base::$query_vars as $var => $regex) {
+					$vars[]=$var;		
+				}
+				return $vars;
+			});
+
 			add_action('template_redirect', function() use ($base, $namespace){
 				global $wp_query;
 				foreach($base::$actions as $class => $actions){
@@ -99,13 +106,6 @@
 						foreach ($base::$query_vars as $var => $regex) {
 							add_rewrite_tag("%$var%", $regex, "$var=" );		
 						}	
-					});
-
-					add_filter('query_vars', function($vars) use($base){
-						foreach ($base::$query_vars as $var => $regex) {
-							$vars[]=$var;		
-						}
-						return $vars;
 					});
 
 					add_action('wp_loaded', function() use ($base, $prefix) {
