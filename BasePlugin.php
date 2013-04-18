@@ -14,6 +14,9 @@
 		static $roles = array(
 		);
 
+		static $rewrite_rules = array();
+		static $query_vars = array();
+
 		static $absent_roles = array();
 
 		static function path($path){
@@ -32,7 +35,7 @@
 				$class::build();
 
 			}
-			foreach (static::$presenters as $presenter) {
+			foreach (array_merge(static::$presenters, array('Base')) as $presenter) {
 				require(static::path('presenters/'.$presenter.'.php'));
 				$class = $namespace.'Presenters\\'.ucfirst($presenter);
 				$class::build();
@@ -78,7 +81,7 @@
 			add_action('plugins_loaded', function() use($base, $namespace) {
 				$prefix = strtolower(str_replace('\\', '', $namespace));
 				$db_version = get_option( $prefix.'_db_version', '0');
-				if( floatval($db_version) < $base::$db_version) {
+				if( ! is_numeric($base::$db_version) || floatval($db_version) < $base::$db_version) {
 					if(! empty($base::$custom_taxonomies)) \CustomTaxonomy::build_database();
 						
 					foreach (array_merge($base::$custom_classes, $base::$custom_users) as $class) {
@@ -91,7 +94,45 @@
 							remove_role($role);
 						}
 					}
-					update_option($prefix.'_db_version', $base::$db_version);
+
+					add_filter('init', function() use($base){
+						foreach ($base::$query_vars as $var => $regex) {
+							add_rewrite_tag("%$var%", $regex, "$var=" );		
+						}	
+					});
+
+					add_filter('query_vars', function($vars) use($base){
+						foreach ($base::$query_vars as $var => $regex) {
+							$vars[]=$var;		
+						}
+						return $vars;
+					});
+
+					add_action('wp_loaded', function() use ($base, $prefix) {
+						if(has_action( "$prefix-rewrite_rules")) 
+							do_action("$prefix-rewrite_rules");
+
+						foreach ($base::$rewrite_rules as $rule => $route) {
+							$matches = 1 ;
+							if(empty($route) || (strpos($route, 'index.php?') === false && strpos($route, '/') === false ))
+								$route = 'index.php?'. $route ;
+							foreach ($base::$query_vars as $var => $regex) {
+								if(strpos($rule, "%$var%") !== false){ 
+									$rule = str_replace("%$var%", $regex, $rule);
+									if($route[strlen($route)-1] != '?')
+										$route .= '&';
+									$route .= sprintf('%s=$matches[%s]', $var, $matches);
+									$matches++ ;
+								}
+							}
+							add_rewrite_rule($rule, $route, 'top');
+						}
+
+						global $wp_rewrite ; $wp_rewrite->flush_rules();						
+					});
+
+					if(is_numeric($base::$db_version)) 
+						update_option($prefix.'_db_version', $base::$db_version);
 				}
 			} );
 
