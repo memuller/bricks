@@ -16,6 +16,7 @@
 
 		static $rewrite_rules = array();
 		static $query_vars = array();
+		static $permastructs = array();
 
 		static $absent_roles = array();
 
@@ -54,6 +55,8 @@
 					foreach ($actions as $action => $options) {
 						if(isset($options['page'])) 
 							$options['pagename'] = $options['page'];
+						if(isset($options['tax'])) 
+							$options['taxonomy'] = $options['tax'] ;
 						# method
 						if(isset($options['method'])){ 
 							$options['method'] = strtoupper($options['method']);
@@ -111,6 +114,10 @@
 					add_action('wp_loaded', function() use ($base, $prefix) {
 						if(has_action( "$prefix-rewrite_rules")) 
 							do_action("$prefix-rewrite_rules");
+
+						foreach($base::$permastructs as $name => $rule){
+							add_permastruct( $name, $rule );
+						}
 
 						foreach ($base::$rewrite_rules as $rule => $route) {
 							$matches = 1 ;
