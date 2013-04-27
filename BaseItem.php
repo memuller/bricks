@@ -46,7 +46,7 @@
 					if(is_numeric($base)){
 						$base = get_userdata($arg);
 					} elseif (is_string($base)) {
-						$base = get_user_by( 'slug', $base );
+						$base = get_user_by( 'login', $base );
 					}
 				} 
 			} else {
