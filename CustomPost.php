@@ -9,20 +9,28 @@
 		static $actions = array();
 		static $absent_collumns = array();
 		static $absent_actions = array('quick-edit');
-		static $rateable = false ; 		
+		static $rateable = false ;
+		static $tabs = false; 		
 		static function create_post_type(){
 			register_post_type( static::$name, static::$creation_fields ) ;
 		}		
 		
 		static function build(){
-			$class = get_called_class();
+			$class = get_called_class(); $namespace = get_namespace($class); 
+			$presenter = $namespace.'\Presenters\Base';
 			add_action('init', $class.'::create_post_type' ) ;
-			
-			$class = get_called_class();
 			add_action('init', $class.'::create_post_type' ) ;
 			$editable_by = $class::$editable_by ; $fields = $class::$fields ;
 
 			//
+			if(static::$tabs){
+				add_action('edit_form_advanced', function() use($class, $presenter){
+					$presenter::render('admin/defaults/tabbed', array(
+						'presenter' => $presenter, 'tabs' => $class::$tabs, 
+						'type' => $class::$name, 'class' => $class, 'object' => new $class()
+					));
+				});
+			}
 
 			// Renders fields on an advanced form, if needed.
 			if(in_array( 'form_advanced', array_keys(static::$editable_by) )){
