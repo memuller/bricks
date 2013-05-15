@@ -68,10 +68,8 @@
 			if(!empty($class::$scripts) || !empty($class::$styles)){
 				add_action('init', function() use($class){
 					foreach (array('scripts', 'styles') as $resource) {
-						$default_args =  $resource == 'scripts' ? 
-							array('dependencies' => array('jquery'), 'version' => false, 'in_footer' => false) :
-							array();
 						foreach ($class::$$resource as $name => $options) {
+							$default_args = array('dependencies' => array('jquery'), 'version' => false, 'in_footer' => false);
 							if('/' == $options['source'][0]){
 								if(isset($options['from']) &&  'plugin' == $options['from']){
 									$options['source'] = $class::url($options['source']);
@@ -158,15 +156,10 @@
 			
 		}
 
-		static function localize_script($asset){
-			$class = get_called_class(); $namespace = get_namespace($class) ;
-			wp_localize_script($asset, $namespace, static::$scripts[$asset]['localization']);
-		}
-
 		static function enqueue_scripts(){
 			global $wp_query;
 			foreach(static::$includes as $resource){
-				$condition = array_keys($resource)[0]; $value = $resource[$condition];
+				$condition = array_keys($resource); $condition =$condition[0]; $value = $resource[$condition];
 				$valid = true; $kind = 'main';
 				switch ($condition) {
 					case 'page':
@@ -209,8 +202,6 @@
 					if(isset($resource[$list])){
 						foreach ($resource[$list] as $asset) {
 							static::recursive_enqueue($type, $asset, $kind);
-							if('script' == $type && isset(static::$scripts[$asset]['localization'])) 
-								static::localize_script($asset);
 						}
 					}
 				}
