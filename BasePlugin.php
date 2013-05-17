@@ -3,8 +3,8 @@
 	class BasePlugin {
 
 		static $db_version = 0 ;
-		static $presenters = array('Base');
-		static $custom_posts = array();
+		static $presenters = array();
+        static $custom_posts = array();
 		static $custom_users = array();
 		static $custom_classes = array();
 		static $custom_singles = array();
