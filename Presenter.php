@@ -79,8 +79,11 @@
 							}
 							$options = array_merge($default_args, $options);
 							$args = array(
-								$name, $options['source'], $options['dependencies'], 
-								$options['version'], $options['in_footer']);
+								$name, $options['source'], 
+								isset($options['dependencies']) ? $options['dependencies'] : array(), 
+								isset($options['version']) ? $options['version'] : false , 
+								isset($options['in_footer']) ? $options['in_footer'] : false
+							);
 							$function = 'scripts' == $resource ? 'wp_register_script' : 'wp_register_style' ;
 							call_user_func_array($function, $args);
 							
