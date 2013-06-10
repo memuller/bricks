@@ -7,6 +7,8 @@
 		static $inherits_from = 'editor';
 		static $capabilities = array();
 
+		static $required_for = array();
+
 		static $actions = array();
 		static $absent_actions = array('quick-edit');
 		
@@ -44,9 +46,19 @@
 			
 		}
 
+		static function auth(){
+			auth_redirect();
+		}
+
 		static function build(){
-			$class = get_called_class();
-			$presenter = get_namespace($class).'\Presenters\Base';
+			$class = get_called_class(); $namespace = get_namespace($class);
+			$presenter = $namespace.'\Presenters\Base';
+			$name = explode('\\', $class) ; $name = $name[sizeof($name)-1] ;
+			$base = $namespace . '\Plugin';
+
+			# Loads role permission requirements, if any.
+			if(! empty(static::$required_for))
+				$base::$role_requirements = array_merge($base::$role_requirements, array(static::$name => static::$required_for));
 
 			if(! empty(static::$fields)){
 				foreach (array('show_user_profile', 'edit_user_profile') as $hook) {

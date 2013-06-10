@@ -10,9 +10,11 @@
 		static $custom_singles = array();
 		static $custom_taxonomies = array();
 		static $restricted_menus = array();
+		static $roles = array();
+
 		static $actions = array();
-		static $roles = array(
-		);
+		static $role_requirements = array();
+
 
 		static $rewrite_rules = array();
 		static $query_vars = array();
@@ -51,6 +53,23 @@
 
 			add_action('template_redirect', function() use ($base, $namespace){
 				global $wp_query;
+
+				foreach ($base::$role_requirements as $role => $urls) {
+					global $wp_query ;
+					$request = $_SERVER['REQUEST_URI']; 
+					if($request[ strlen($request)-1] == '/') $request = substr($request, 0, -1);
+					foreach ($urls as $url) {
+						if($url[0] != '/') $url = '/'. $url;
+						if(substr($request, -strlen($url)) === $url ){
+							if(!is_user_logged_in() || !current_user_can($role)){
+								$user_class = $namespace. ucfirst($role);
+								$user_class::auth();
+							}
+						}	
+					}
+					
+				}
+
 				foreach($base::$actions as $class => $actions){
 					$class =  strpos($class, 'Presenters') === false ? $namespace.'Presenters\\'.$class : $class ;
 					foreach ($actions as $action => $options) {
