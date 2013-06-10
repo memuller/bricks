@@ -52,6 +52,7 @@
 			add_action('template_redirect', function() use ($base, $namespace){
 				global $wp_query;
 				foreach($base::$actions as $class => $actions){
+					$class =  strpos($class, 'Presenters') === false ? $namespace.'Presenters\\'.$class : $class ;
 					foreach ($actions as $action => $options) {
 						if(isset($options['page'])) 
 							$options['pagename'] = $options['page'];
@@ -81,7 +82,7 @@
 							if(!is_archive() && $options['archive'] != $wp_query->query['post_type'])
 								continue; 
 						}
-						$class =  strpos($class, 'Presenters') === false ? $namespace.'Presenters\\'.$class : $class ;
+						
 						$class::$action();
 					}
 				}
