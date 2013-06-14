@@ -62,6 +62,7 @@
 						if($url[0] != '/') $url = '/'. $url;
 						if(substr($request, -strlen($url)) === $url ){
 							if(!is_user_logged_in() || !current_user_can($role)){
+								if(current_user_can('administrator')) continue;
 								$user_class = $namespace. ucfirst($role);
 								$user_class::auth();
 							}
