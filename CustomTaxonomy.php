@@ -93,7 +93,7 @@
 			global $tag; 
 			if($arg){
 				if (is_numeric($arg)) {
-					$this->term = get_term_by('id', $arg, static::$name);
+					$this->term = get_term($arg, static::$name);
 
 				}elseif(is_string($arg)) {
 					$this->term = get_term_by('slug', $arg, static::$name );
@@ -133,7 +133,7 @@
 				update_tax_meta($this->term['term_taxonomy_id'], $name, $value);
 			}
 		}
-
+        
 		function children(){
 			if(static::$child){
 				$returnable = array(); $child_class = get_namespace(get_called_class()).'\\'. ucfirst(static::$child); 
