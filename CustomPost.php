@@ -25,10 +25,13 @@
 			//
 			if(static::$tabs){
 				add_action('edit_form_advanced', function() use($class, $presenter){
-					$presenter::render('admin/defaults/tabbed', array(
-						'presenter' => $presenter, 'tabs' => $class::$tabs, 
-						'type' => $class::$name, 'class' => $class, 'object' => new $class()
-					));
+					$screen = get_current_screen();
+					if($screen->post_type == $class::$name){
+						$presenter::render('admin/defaults/tabbed', array(
+							'presenter' => $presenter, 'tabs' => $class::$tabs, 
+							'type' => $class::$name, 'class' => $class, 'object' => new $class()
+						));
+					}
 				});
 			}
 
@@ -57,7 +60,7 @@
 					foreach ($editable_by as $metabox => $options) {
 						$fields_to_use = array();
 						foreach($fields as $field => $field_options){
-							if(in_array($field, $options['fields'])){
+							if(in_array($field, loopable($options['fields']) )){
 								$fields_to_use = array_merge($fields_to_use, array($field => $field_options));
 								unset($fields[$field]);
 							}
