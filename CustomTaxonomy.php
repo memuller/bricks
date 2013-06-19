@@ -51,6 +51,7 @@
 
 			add_action('edited_'.$class::$name, function($term_id) use($class){
 				$term_taxonomy = get_term($term_id, $class::$name);
+				if(!isset($_POST[$class::$name])) return false ;
 				foreach ($_POST[$class::$name] as $key => $value) {
 					if(isset($class::$fields[$key])){
 						if(in_array($class::$fields[$key]['type'], array('geo', 'list', 'array')))
