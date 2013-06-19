@@ -142,6 +142,7 @@
 
 						foreach ($base::$rewrite_rules as $rule => $route) {
 							$matches = 1 ;
+							if($rule[sizeof($rule)-1] != '$') $rule = $rule.'?/?$' ;
 							if(empty($route) || (strpos($route, 'index.php?') === false && strpos($route, '/') === false ))
 								$route = 'index.php?'. $route ;
 							foreach ($base::$query_vars as $var => $regex) {
