@@ -10,6 +10,7 @@
 		static $custom_singles = array();
 		static $custom_taxonomies = array();
 		static $restricted_menus = array();
+		static $restrict_for_everyone = false;
 		static $roles = array();
 
 		static $actions = array();
@@ -167,8 +168,8 @@
 
 			if(!empty(static::$restricted_menus)){
 				$restricted_menus = static::$restricted_menus;
-				add_action('admin_menu', function() use ($restricted_menus){
-					if(!current_user_can('manage_options')){
+				add_action('admin_menu', function() use ($restricted_menus, $base){
+					if( $base::$restrict_for_everyone || !current_user_can('manage_options')){
 						global $menu ; $restricted = array();
 						foreach ($restricted_menus as $item) {
 							$restricted[]= __($item);
