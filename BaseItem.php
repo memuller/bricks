@@ -41,49 +41,51 @@
 
 		function __call($function, $params){
 			if(!empty(static::$has) || isset(static::$belongs_to)){
-				if(in_array($function, static::$has)){
-					return $this->children( $function,
-						isset($params[1]) ? $params[1] : 1,
-						isset($params[2]) ? $params[2] : get_option('posts_per_page')
-					);	
-				} else {
-					if(strpos($function, '_')!== -1){
-						$exploded_function = explode('_', $function);
-						if( isset(static::$has)  && in_array($exploded_function[0], static::$has)){
-							$respondable = array() ;
-							$items = $this->children( $exploded_function[0], 1, 4 );
-							foreach ($items as $item) {
-								$respondable[]= sprintf(
-									"<a href='%s'>%s</a>",
-									admin_url("post.php?post=$item->ID&action=edit"),
-									$item->post_title
-								);
-							}
-							if(!empty($respondable))
-								$respondable[]= sprintf(
-									"<em><a href='%s'>(...)</a></em>",
-									admin_url(sprintf("edit.php?post_type=%s&post_parent=%d", $exploded_function[0], $this->ID ))
-								);
-							return  !empty($respondable) ? implode('<br/>', $respondable) : '—' ;
-							
-						} elseif($exploded_function[0] == static::$belongs_to ) {
-
-							$parent_class = class_from_namespace(ucfirst(static::$belongs_to), get_called_class());
-							$field = $exploded_function[0];
-							if($this->$field){
-								$parent = new $parent_class($this->$field);
-								return sprintf("<a href='%s'>%s</a>",
-										admin_url("post.php?post=$parent->ID&action=edit"),
-										$parent->post_title);	
-							} else { return '--' ; }
-							
-						} else {
-							return false ;
-						}
+				foreach (static::$has as $item) {
+					if($function == $item || $function == $item.'s'){
+						return $this->children( $item,
+							isset($params[1]) ? $params[1] : 1,
+							isset($params[2]) ? $params[2] : get_option('posts_per_page')
+						);
 					}
-					
+				}
+				if(strpos($function, '_')!== -1){
+					$exploded_function = explode('_', $function);
+					if( isset(static::$has)  && in_array($exploded_function[0], static::$has)){
+						$respondable = array() ;
+						$items = $this->children( $exploded_function[0], 1, 4 );
+						foreach ($items as $item) {
+							$respondable[]= sprintf(
+								"<a href='%s'>%s</a>",
+								admin_url("post.php?post=$item->ID&action=edit"),
+								$item->post_title
+							);
+						}
+						if(!empty($respondable))
+							$respondable[]= sprintf(
+								"<em><a href='%s'>(...)</a></em>",
+								admin_url(sprintf("edit.php?post_type=%s&post_parent=%d", $exploded_function[0], $this->ID ))
+							);
+						return  !empty($respondable) ? implode('<br/>', $respondable) : '—' ;
+						
+					} elseif($exploded_function[0] == static::$belongs_to ) {
+
+						$parent_class = sibling_class(ucfirst(static::$belongs_to), get_called_class());
+						$field = $exploded_function[0];
+						if($this->$field){
+							$parent = new $parent_class($this->$field);
+							return sprintf("<a href='%s'>%s</a>",
+									admin_url("post.php?post=$parent->ID&action=edit"),
+									$parent->post_title);	
+						} else { return '--' ; }
+						
+					} else {
+						return false ;
+					}
 				}
 				
+			
+			
 			} else {
 				return false ;
 			}
@@ -116,7 +118,7 @@
 
 		function parent(){
 			$field = static::$belongs_to ;
-			$parent_class = class_from_namespace(ucfirst($field), get_called_class());
+			$parent_class = sibling_class(ucfirst($field), get_called_class());
 			return new $parent_class($this->$field);
 		}
 

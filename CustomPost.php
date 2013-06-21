@@ -85,7 +85,7 @@
 			}
 
 			if(!empty(static::$belongs_to)){
-				$parent_class = class_from_namespace(ucfirst(static::$belongs_to), get_called_class());
+				$parent_class = sibling_class(ucfirst(static::$belongs_to), get_called_class());
 				static::$collumns[static::$belongs_to] = ucfirst($parent_class::$name) ;
 				
 				if(is_admin()){
@@ -184,7 +184,6 @@
 					'rated_by' => array('type' => 'array', 'label' => 'Users that rated this', 'default' => array())
 				));
 			}
-
 		}
 
 		public function rate($value){
