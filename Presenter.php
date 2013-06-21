@@ -274,7 +274,7 @@
 		return $namespace[0];
 	}
 
-	function class_from_namespace($class, $sibling){
+	function sibling_class($class, $sibling){
 		$namespace = get_namespace($sibling);
 		return $namespace.'\\'.$class ; 
 	}
