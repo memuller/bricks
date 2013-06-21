@@ -64,6 +64,35 @@
 			}			
 		}
 
+		function parent(){
+			$field = static::$belongs_to ;
+			$parent_class = class_from_namespace(ucfirst($field), get_called_class());
+			return new $parent_class($this->$field);
+		}
+
+		function children($type, $page = 1, $per_page = null, $build = true){
+			$class = get_called_class(); $namespace = get_namespace($class);
+			if(!isset($per_page)) $per_page = get_option('posts_per_page');
+			$results = get_posts(array('post_type' => $type,
+				'paged' => $page,
+				'posts_per_page' => $per_page,
+				'meta_query' => array(
+					array(
+						'key' => static::$name,
+						'value' => $this->ID
+					)
+				)
+			));
+			if($build){
+				$child_class = $namespace.'\\'.ucfirst($type);
+				$returnable = array();
+				foreach ($results as $result) {
+					$returnable[]= new $child_class($result);
+				}
+				return $returnable ; 
+			} else { return $results ;}
+		}
+
 		function apply_filters($field){
 			if(!isset($this->unfiltered_fields[$field])){ 
 				if(isset(static::$fields[$field]['default'])) 
