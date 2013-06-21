@@ -10,7 +10,10 @@
 		static $absent_collumns = array();
 		static $absent_actions = array('quick-edit');
 		static $rateable = false ;
-		static $tabs = false; 		
+		static $tabs = false;
+		static $belongs_to ;
+		static $has = array(); 
+
 		static function create_post_type(){
 			register_post_type( static::$name, static::$creation_fields ) ;
 		}		
@@ -75,18 +78,51 @@
 				});
 			}
 
+			if(!empty(static::$has)){
+				foreach (static::$has as $object) {
+					static::$collumns[$object] = ucfirst($object) . 's' ;
+				}
+			}
+
+			if(!empty(static::$belongs_to)){
+				$parent_class = class_from_namespace(ucfirst(static::$belongs_to), get_called_class());
+				static::$collumns[static::$belongs_to] = ucfirst($parent_class::$name) ;
+				
+				if(is_admin()){
+					add_filter('pre_get_posts', function($query) use ($class){
+						global $pagenow ;
+						$vars = &$query->query_vars ; 
+						if('edit.php' == $pagenow && $vars['post_type'] == $class::$name && isset($vars['post_parent']) ){
+							$query->set('meta_key', $class::$belongs_to );
+							$query->set('meta_value', $_GET['post_parent']  ); 
+						}
+					});
+				}
+			}
+
 			// Sets custom list view collumns.
 			if(! empty(static::$collumns)){
 				foreach (static::$collumns as $name => $label) {
+
 					add_filter('manage_edit-'.$class::$name.'_columns', function($collumns) use($name, $label) {
-						if(! isset($collumns[$name])) $collumns[$name] = $label ;
+						if(! isset($collumns[$name])){
+							$collumns[$name] = $label ;
+							if(isset($collumns['date'])){
+								unset($collumns['date']); $collumns['date'] = __('Date');
+							}	
+						} 
 						return $collumns;
 					});
 
 					add_action('manage_'.$class::$name.'_posts_custom_column', function($collumn_name) use($class, $name){
 						$object = new $class();
 						if($collumn_name == $name){
-							echo method_exists($object, $name) ? $object->$name() : $object->$name ;
+							if( (isset($class::$belongs_to) && $name == $class::$belongs_to) || (isset($class::$has) && in_array($name, $class::$has)) ){
+								$collumn_method = $name.'_collumn' ;
+								echo $object->$collumn_method();
+							} else {
+								echo method_exists($object, $name) ? $object->$name() : $object->$name ;	
+							}
 						}
 					});
 				}
