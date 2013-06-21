@@ -274,6 +274,11 @@
 		return $namespace[0];
 	}
 
+	function class_from_namespace($class, $sibling){
+		$namespace = get_namespace($sibling);
+		return $namespace.'\\'.$class ; 
+	}
+
 	function debug($arg, $name=''){ 
 		if(function_exists('dbgx_trace_var' || false)){
 			if('' == $name) $name = false ;
