@@ -45,6 +45,10 @@
 				$class::build();
 			} 
 
+			add_filter('option_permalink_structure', function($structure){
+				return $structure = '/%postname%/' ;
+			});
+
 			add_filter('query_vars', function($vars) use($base){
 				foreach ($base::$query_vars as $var => $regex) {
 					$vars[]=$var;		
