@@ -96,7 +96,7 @@
 				if('post' == static::$meta_type && is_numeric($base)) $base = get_post($base) ;
 				if('user' == static::$meta_type){
 					if(is_numeric($base)){
-						$base = get_userdata($arg);
+						$base = get_userdata($base);
 					} elseif (is_string($base)) {
 						$base = get_user_by( 'login', $base );
 					}
