@@ -8,6 +8,7 @@
 		static $includes = array();
 		static $scripts = array();
 		static $styles = array();
+		static $priority = false ;
 
 		static function render_to_string($view, $scope=array()){
 			global $plugin_haml_parser ; 
@@ -128,7 +129,12 @@
 			global $shit ; $shit = array();
 			# Loads actions.
 			if(!empty($class::$actions)){
-				$base::$actions = array_merge($base::$actions, array($name => $class::$actions));
+				if($class::$priority){
+					$base::$actions = array_merge(array($name => $class::$actions), $base::$actions);	
+				} else {
+					$base::$actions = array_merge($base::$actions, array($name => $class::$actions));
+				}
+				
 					
 			}
 
