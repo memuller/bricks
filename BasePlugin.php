@@ -33,7 +33,7 @@
 
 		static function build(){
 			$base = get_called_class(); $namespace = '\\'.get_namespace($base) . '\\';
-			foreach (array_merge(static::$custom_taxonomies, static::$custom_classes, static::$custom_posts, static::$custom_singles, static::$custom_users) as $object) {
+			foreach (array_merge(static::$custom_taxonomies, static::$custom_users, static::$custom_classes, static::$custom_posts, static::$custom_singles) as $object) {
 				require( static::path('models/'. $object . '.php'));
 				$class = $namespace. ucfirst($object);
 				$class::build();
