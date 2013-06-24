@@ -50,6 +50,15 @@
 			auth_redirect();
 		}
 
+		function __construct($base=false){
+			if(!$base){
+				global $current_user ; 
+				get_currentuserinfo();
+				$base = $current_user ; 
+			}
+			parent::__construct($base);
+		}
+
 		static function build(){
 			$class = get_called_class(); $namespace = get_namespace($class);
 			$presenter = $namespace.'\Presenters\Base';
