@@ -117,6 +117,19 @@
 			add_action('plugins_loaded', function() use($base, $namespace) {
 				$prefix = strtolower(str_replace('\\', '', $namespace));
 				$db_version = get_option( $prefix.'_db_version', '0');
+
+				add_filter('init', function() use($base){
+					foreach ($base::$query_vars as $var => $regex) {
+						add_rewrite_tag("%$var%", $regex, "$var=" );		
+					}
+					foreach($base::$permastructs as $name => $rule){
+						add_permastruct( $name, $rule );
+					}
+				});
+
+
+
+
 				if( ! is_numeric($base::$db_version) || floatval($db_version) < $base::$db_version) {
 					if(! empty($base::$custom_taxonomies)) \CustomTaxonomy::build_database();
 						
@@ -131,36 +144,11 @@
 						}
 					}
 
-					add_filter('init', function() use($base){
-						foreach ($base::$query_vars as $var => $regex) {
-							add_rewrite_tag("%$var%", $regex, "$var=" );		
-						}	
-					});
+
 
 					add_action('wp_loaded', function() use ($base, $prefix) {
 						if(has_action( "$prefix-rewrite_rules")) 
 							do_action("$prefix-rewrite_rules");
-
-						foreach($base::$permastructs as $name => $rule){
-							add_permastruct( $name, $rule );
-						}
-
-						foreach ($base::$rewrite_rules as $rule => $route) {
-							$matches = 1 ;
-							if($rule[sizeof($rule)-1] != '$') $rule = $rule.'?/?$' ;
-							if(empty($route) || (strpos($route, 'index.php?') === false && strpos($route, '/') === false ))
-								$route = 'index.php?'. $route ;
-							foreach ($base::$query_vars as $var => $regex) {
-								if(strpos($rule, "%$var%") !== false){ 
-									$rule = str_replace("%$var%", $regex, $rule);
-									if($route[strlen($route)-1] != '?')
-										$route .= '&';
-									$route .= sprintf('%s=$matches[%s]', $var, $matches);
-									$matches++ ;
-								}
-							}
-							add_rewrite_rule($rule, $route, 'top');
-						}
 
 						global $wp_rewrite ; $wp_rewrite->flush_rules();						
 					});
@@ -169,6 +157,28 @@
 						update_option($prefix.'_db_version', $base::$db_version);
 				}
 			} );
+			
+
+			add_filter('rewrite_rules_array', function($rules) use($base, $prefix){
+				debug($rules);
+				foreach ($base::$rewrite_rules as $rule => $route) {
+					$matches = 1 ;
+					if($rule[sizeof($rule)-1] != '$') $rule = $rule.'?/?$' ;
+					if(empty($route) || (strpos($route, 'index.php?') === false && strpos($route, '/') === false ))
+						$route = 'index.php?'. $route ;
+					foreach ($base::$query_vars as $var => $regex) {
+						if(strpos($rule, "%$var%") !== false){ 
+							$rule = str_replace("%$var%", $regex, $rule);
+							if($route[strlen($route)-1] != '?')
+								$route .= '&';
+							$route .= sprintf('%s=$matches[%s]', $var, $matches);
+							$matches++ ;
+						}
+					}
+					$rules = array_merge(array($rule => $route), $rules);
+				}
+				return $rules ; 
+			});
 
 			if(!empty(static::$restricted_menus)){
 				$restricted_menus = static::$restricted_menus;
