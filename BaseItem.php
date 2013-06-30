@@ -44,8 +44,8 @@
 				foreach (static::$has as $item) {
 					if($function == $item || $function == $item.'s'){
 						return $this->children( $item,
-							isset($params[1]) ? $params[1] : 1,
-							isset($params[2]) ? $params[2] : get_option('posts_per_page')
+							isset($params[0]) ? $params[0] : 1,
+							isset($params[1]) ? $params[1] : get_option('posts_per_page')
 						);
 					}
 				}
