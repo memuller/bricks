@@ -13,6 +13,8 @@
 		static $tabs = false;
 		static $belongs_to ;
 		static $has = array(); 
+		static $per_page = 10;
+		static $fields = array();
 
 		static function create_post_type(){
 			register_post_type( static::$name, static::$creation_fields ) ;
@@ -175,8 +177,8 @@
 				}
 			}
 
-			if(static::$rateable){
-				static::$fields = array_merge(static::$fields, array(
+			if($class::$rateable){
+				$class::$fields = array_merge($class::$fields, array(
 					'ratings_number' => array('type' => 'integer', 'label' => 'Number of Ratings', 'default' => 0),
 					'ratings_positive' => array('type' => 'integer', 'label' => 'Number of Negative Ratings', 'default' => 0),
 					'ratings_negative' => array('type' => 'integer', 'label' => 'Number of Positive Ratings', 'default' => 0),
@@ -185,6 +187,53 @@
 				));
 			}
 		}
+
+		static function taxonomies(){
+			return get_object_taxonomies(static::$name, 'objects');
+		}
+
+		public static function all($params = array()){
+			$class = get_called_class();
+			$default_params = array(
+				'post_type' => static::$name,
+				'posts_per_page' => static::$per_page
+			);
+			$params = array_merge($default_params, $params);
+			
+			if(isset($params['only'])){
+				$params['posts_per_page'] = $params['only'];
+				unset($params['only']);
+			}
+			
+			if(isset($params['order_by_meta'])){
+				$params['meta_key'] = $params['order_by_meta'];
+				$params['order_by'] = 'meta_value' ;
+				if(static::$fields['type'] == 'integer')
+					$params['order_by'] .= '_num';
+
+				unset($params['order_by_meta']);
+			}
+			foreach (static::taxonomies() as $taxonomy) {
+				if(isset($params[$taxonomy->rewrite['slug']])){
+					if(!isset($params['tax_query'])) $params['tax_query'] = array() ;
+					$params['tax_query'][]= array(
+						'taxonomy' => $taxonomy->rewrite['slug'],
+						'field' => 'slug',
+						'terms' => loopable($params[$taxonomy->rewrite['slug']])
+					); 
+					unset($params[$taxonomy->rewrite['slug']]);
+				}
+			}
+			return array_map(function($post) use($class) {
+				return new $class($post);
+			}, get_posts($params));
+		}
+
+		public function siblings($params = array()){
+			$params = array_merge($params, array('post__not_in' => loopable($this->ID)));
+			return static::all($params);
+		}
+
 
 		public function rate($value){
 			if(!static::$rateable) return false ;
