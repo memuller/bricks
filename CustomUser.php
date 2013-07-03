@@ -29,6 +29,17 @@
 			return get_posts(array_merge($default_args, $args));
 		}
 
+		public function count($post_type = 'post'){
+			global $wpdb ;
+			$where = get_posts_by_author_sql($post_type, true, $this->ID) ;
+			$sql = "SELECT count(*) from $wpdb->posts $where" ;
+			return $wpdb->get_var( $sql );
+		}
+
+		public function join_date($format = "m/d/Y"){
+			echo date($format, strtotime($this->user_registered));
+		}
+
 		static function build_database(){
 			remove_role(static::$name);
 			$inherits_from = get_role( static::$inherits_from ); 
