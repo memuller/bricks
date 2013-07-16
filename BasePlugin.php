@@ -22,7 +22,7 @@
 		static $permastructs = array();
 
 		static $absent_roles = array();
-
+		static $migrations = array();
 		static function path($path){
 			return plugin_dir_path(dirname(__FILE__)). $path;
 		}
@@ -32,7 +32,7 @@
 		}
 
 		static function build(){
-			$base = get_called_class(); $namespace = '\\'.get_namespace($base) . '\\';
+			$base = get_called_class(); $namespace = '\\'.get_namespace($base) . '\\'; $prefix = strtolower(str_replace('\\', '', $namespace));
 			foreach (array_merge(static::$custom_taxonomies, static::$custom_users, static::$custom_classes, static::$custom_posts, static::$custom_singles) as $object) {
 				require( static::path('models/'. $object . '.php'));
 				$class = $namespace. ucfirst($object);
@@ -114,8 +114,8 @@
 				
 			});
 
-			add_action('plugins_loaded', function() use($base, $namespace) {
-				$prefix = strtolower(str_replace('\\', '', $namespace));
+			add_action('plugins_loaded', function() use($base, $namespace, $prefix) {
+				
 				$db_version = get_option( $prefix.'_db_version', '0');
 
 				add_filter('init', function() use($base){
@@ -127,11 +127,27 @@
 					}
 				});
 
+				if(!empty($base::$migrations)){
+					add_action($prefix.'_update', function($version) use($base, $namespace, $prefix){
+						$migrated_versions = get_option($prefix.'_migrated_versions', array());
+						foreach ($base::$migrations as $version => $migrations) {
+							if(!in_array($version, $migrated_versions)){
+								foreach (loopable($migrations) as $migration) {
+									$migrations = 'migrate_'.$migration ;
+									$base::$migration();
+								}
+								$migrated_versions[]= $version ;
+								update_option($prefix.'_migrated_versions', $migrated_versions);
+							}	
+						}
+					});
+				}
 
 
 
 				if( ! is_numeric($base::$db_version) || floatval($db_version) < $base::$db_version) {
 					if(! empty($base::$custom_taxonomies)) \CustomTaxonomy::build_database();
+					do_action($prefix.'_update', $base::$db_version);
 						
 					foreach (array_merge($base::$custom_classes, $base::$custom_users) as $class) {
 						$class = $namespace. $class ;
