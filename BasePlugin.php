@@ -133,7 +133,7 @@
 						foreach ($base::$migrations as $version => $migrations) {
 							if(!in_array($version, $migrated_versions)){
 								foreach (loopable($migrations) as $migration) {
-									$migrations = 'migrate_'.$migration ;
+									$migration = 'migrate_'.$migration ;
 									$base::$migration();
 								}
 								$migrated_versions[]= $version ;
