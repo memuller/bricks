@@ -86,8 +86,24 @@
 								isset($options['in_footer']) ? $options['in_footer'] : false
 							);
 							$function = 'scripts' == $resource ? 'wp_register_script' : 'wp_register_style' ;
-							call_user_func_array($function, $args);
 							
+							call_user_func_array($function, $args);
+
+							if('scripts' == $resource && isset($options['localize'])){
+								$object = $options['localize'][0];
+								if(isset($options['localize'][1])){
+									if(is_array($options['localize'][1])){
+										$localization = $options['localize'][1] ;
+									} else {
+										$localization_function = $options['localize'][1];	
+									}
+								} else {
+									$localization_function = strtolower($object);
+								}
+								if(!isset($localization))
+									$localization = $class::$localization_function();
+								wp_localize_script( $name, $object, $localization );
+							}
 						}				
 					}
 				});
