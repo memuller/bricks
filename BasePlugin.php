@@ -176,12 +176,13 @@
 			
 
 			add_filter('rewrite_rules_array', function($rules) use($base, $prefix){
-				debug($rules);
 				foreach ($base::$rewrite_rules as $rule => $route) {
 					$matches = 1 ;
-					if($rule[sizeof($rule)-1] != '$') $rule = $rule.'?/?$' ;
+					if($rule[sizeof($rule)-1] != '$' && $rule[sizeof($rule)-1] != '?') 
+						$rule = $rule.'?$' ;
 					if(empty($route) || (strpos($route, 'index.php?') === false && strpos($route, '/') === false ))
 						$route = 'index.php?'. $route ;
+					$base::$query_vars['paged'] = 'page/([0-9]+)' ;
 					foreach ($base::$query_vars as $var => $regex) {
 						if(strpos($rule, "%$var%") !== false){ 
 							$rule = str_replace("%$var%", $regex, $rule);
