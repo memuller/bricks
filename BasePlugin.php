@@ -16,13 +16,15 @@
 		static $actions = array();
 		static $role_requirements = array();
 
-
 		static $rewrite_rules = array();
 		static $query_vars = array();
 		static $permastructs = array();
 
 		static $absent_roles = array();
 		static $migrations = array();
+
+		static $has_translations = false;  
+
 		static function path($path){
 			return plugin_dir_path(dirname(__FILE__)). $path;
 		}
@@ -39,6 +41,13 @@
 				$class::build();
 
 			}
+
+			if(static::$has_translations){
+				require( static::path('base/Translation.php'));
+				$class = $namespace.'Translations' ;
+				$class::build();
+			}
+
 			foreach (array_merge(static::$presenters, array('Base')) as $presenter) {
 				require(static::path('presenters/'.$presenter.'.php'));
 				$class = $namespace.'Presenters\\'.ucfirst($presenter);
@@ -308,10 +317,7 @@
 								$('.ml-submit').hide();
 							}
 						});
-					</script> 				
-					
-				
-				
+					</script>
 				<?php } return $args ; 
 			});
 
