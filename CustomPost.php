@@ -188,6 +188,36 @@
 			}
 		}
 
+		static function create($fields){
+			global $wpdb ;
+			$class = get_called_class() ;
+			$meta = array(); $post = array('post_type' => static::$name, 'post_status' => 'publish');
+			foreach ($fields as $field => $value) {
+				if(array_key_exists($field, static::$fields)){
+					$meta[$field] = $value ;
+				} else {
+					foreach (array('title', 'name', 'content') as $name) {
+					 	if($field == $name){
+					 		$new_field = "post_$field" ;
+					 		$post[$new_field] = $value ;
+					 		unset($post[$field]) ;
+					 		$field = $new_field ; 
+					 	}
+					 } 
+					$post[$field] = $value ;
+				}
+
+			}
+
+			$inserted = $wpdb->insert($wpdb->posts, $post);
+			if(!$inserted) return false ;
+			$post = new $class($wpdb->insert_id) ;
+			foreach ($meta as $field => $value) {
+				$post->$field = $value ;
+			}
+			return $post ; 
+		}
+
 		static function taxonomies(){
 			return get_object_taxonomies(static::$name, 'objects');
 		}
