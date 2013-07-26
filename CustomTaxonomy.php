@@ -87,13 +87,16 @@
 
 			add_action('created_'.$class::$name, function($term_id) use($class){
 				$term_taxonomy = get_term($term_id, $class::$name);
-				foreach ($_POST[$class::$name] as $key => $value) {
-					if(isset($class::$fields[$key])){
-						if(in_array($class::$fields[$key]['type'], array('geo', 'list', 'array')))
-							$value = maybe_serialize($value);
-						update_tax_meta($term_taxonomy->term_taxonomy_id, $key, $value);
-					}
+				if(isset($_POST[$class::$name])){
+					foreach ($_POST[$class::$name] as $key => $value) {
+						if(isset($class::$fields[$key])){
+							if(in_array($class::$fields[$key]['type'], array('geo', 'list', 'array')))
+								$value = maybe_serialize($value);
+							update_tax_meta($term_taxonomy->term_taxonomy_id, $key, $value);
+						}
+					}	
 				}
+				
 			});
 		}
 
