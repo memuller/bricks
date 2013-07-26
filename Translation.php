@@ -20,6 +20,7 @@
 				'view' => 'View',
 				'view_item' => 'View Translations')
 		) ;
+		static $icon = '\f205';
 		static $absent_actions = array('quick-edit');
 		static $absent_collumns = array('date');
 		
@@ -99,14 +100,6 @@
 					wp_enqueue_script('admin-translation', $base::url('lib/js/utils/translation.js'), array('jquery'));
 				}
 			});
-
-			add_action('admin_print_scripts', function(){ ?>
-				<style type="text/css">
-					#menu-posts-translation .wp-menu-image:before{
-						content: '\f205' !important;
-					}
-				</style>
-			<?php });
 
 			parent::build();
 		}
