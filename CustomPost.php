@@ -15,6 +15,7 @@
 		static $has = array(); 
 		static $per_page = 10;
 		static $fields = array();
+		static $icon;
 
 		static function create_post_type(){
 			register_post_type( static::$name, static::$creation_fields ) ;
@@ -185,6 +186,17 @@
 					'rating' => array('type' => 'integer', 'label' => 'Rating', 'default' => 0),
 					'rated_by' => array('type' => 'array', 'label' => 'Users that rated this', 'default' => array())
 				));
+			}
+
+			if(isset($class::$icon)){
+				add_action('admin_print_scripts', function() use($class){
+					printf('
+					<style type="text/css">
+						#menu-posts-%s .wp-menu-image:before{
+							content: "%s" !important;
+						}
+					</style>', $class::$name, $class::$icon );
+				});
 			}
 		}
 
