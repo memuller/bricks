@@ -47,9 +47,9 @@
 				add_action('admin_print_scripts', function() use($class){
 					$screen = get_current_screen();
 					if($screen->id == 'edit-'.$class::$name && $screen->base == 'edit-tags'){
-						if(static::$creation_fields['hierarchical'] && 
-							isset(static::$creation_fields['has_parent']) &&
-							! static::$creation_fields['has_parent']
+						if($class::$creation_fields['hierarchical'] && 
+							isset($class::$creation_fields['has_parent']) &&
+							! $class::$creation_fields['has_parent']
 						){
 							echo('
 							<style type="text/css">
