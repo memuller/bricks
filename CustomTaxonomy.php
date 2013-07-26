@@ -14,7 +14,13 @@
 		public $term ;
 
 		static function create_taxonomy(){
-			static::$creation_fields = array_merge(static::$settings, array('labels' => static::$labels));
+			static::$creation_fields = array_merge(
+				array(
+					'has_parent' => false 
+				),
+				static::$settings, 
+				array('labels' => static::$labels)
+			);
 			register_taxonomy( static::$name, static::$applies_to, static::$creation_fields ) ;
 		}	
 
@@ -30,7 +36,6 @@
 				if(is_admin()){
 					add_filter('load-edit-tags.php', function() use($class) {
 						$screen = get_current_screen();
-
 						if($screen->id == 'edit-'.$class::$name && $screen->base == 'edit-tags'){
 							global $posts, $tags, $taxonomy;
 						}
@@ -38,6 +43,24 @@
 				}
 					
 			}
+			if(is_admin()){
+				add_action('admin_print_scripts', function() use($class){
+					$screen = get_current_screen();
+					if($screen->id == 'edit-'.$class::$name && $screen->base == 'edit-tags'){
+						if(static::$creation_fields['hierarchical'] && 
+							isset(static::$creation_fields['has_parent']) &&
+							! static::$creation_fields['has_parent']
+						){
+							echo('
+							<style type="text/css">
+								.form-field:nth-of-type(3) { display: none; }
+							</style>');
+						}						
+					}
+
+				});
+			}
+			
 
 			foreach(array('add', 'edit') as $action){
 				add_action($class::$name.'_'.$action.'_form_fields', function() use($class,$action){
