@@ -4,6 +4,7 @@
 
 		static $name ;
 		static $creation_fields ;
+		static $labels ;
 		static $editable_by = array();
 		static $collumns = array();
 		static $actions = array();
@@ -22,7 +23,8 @@
 		}		
 		
 		static function build(){
-			$class = get_called_class(); $namespace = get_namespace($class); 
+			$class = get_called_class(); $namespace = get_namespace($class);
+			if(isset(static::$labels)) static::$creation_fields['labels'] = static::$labels ; 
 			$presenter = $namespace.'\Presenters\Base';
 			add_action('init', $class.'::create_post_type' ) ;
 			add_action('init', $class.'::create_post_type' ) ;
