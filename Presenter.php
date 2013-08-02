@@ -66,6 +66,13 @@
 					add_action('wp_enqueue_scripts', "$class::$resource" );
 				}
 			}
+
+			if(isset($class::$script_version)){
+				foreach ($class::$scripts as $script => $options) {
+					$options['version'] = $class::$script_version ;
+				}
+			}
+
 			if(!empty($class::$scripts) || !empty($class::$styles)){
 				add_action('init', function() use($class){
 					foreach (array('scripts', 'styles') as $resource) {
