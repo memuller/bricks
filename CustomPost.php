@@ -212,7 +212,7 @@
 				if(array_key_exists($field, static::$fields)){
 					$meta[$field] = $value ;
 				} else {
-					foreach (array('title', 'name', 'content') as $name) {
+					foreach (array('title', 'name', 'content', 'excerpt', 'author', 'name') as $name) {
 					 	if($field == $name){
 					 		$new_field = "post_$field" ;
 					 		$post[$new_field] = $value ;
@@ -263,7 +263,7 @@
 				if(isset($params[$taxonomy->rewrite['slug']])){
 					if(!isset($params['tax_query'])) $params['tax_query'] = array() ;
 					$params['tax_query'][]= array(
-						'taxonomy' => $taxonomy->rewrite['slug'],
+						'taxonomy' => $taxonomy->query_var,
 						'field' => 'slug',
 						'terms' => loopable($params[$taxonomy->rewrite['slug']])
 					); 
