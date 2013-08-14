@@ -5,6 +5,7 @@
 		static $db_version = 0 ;
 		static $presenters = array();
         static $custom_posts = array();
+        static $custom_post_formats = array();
 		static $custom_users = array();
 		static $custom_classes = array();
 		static $custom_singles = array();
@@ -35,7 +36,7 @@
 
 		static function build(){
 			$base = get_called_class(); $namespace = '\\'.get_namespace($base) . '\\'; $prefix = strtolower(str_replace('\\', '', $namespace));
-			foreach (array_merge(static::$custom_taxonomies, static::$custom_users, static::$custom_classes, static::$custom_posts, static::$custom_singles) as $object) {
+			foreach (array_merge(static::$custom_taxonomies, static::$custom_users, static::$custom_classes, static::$custom_post_formats, static::$custom_posts, static::$custom_singles) as $object) {
 				require( static::path('models/'. $object . '.php'));
 				$class = $namespace. ucfirst($object);
 				$class::build();
@@ -278,6 +279,24 @@
 							wp_enqueue_script('geo-field', $base::url('lib/js/utils/geo-field.js'), array('jquery', 'gmaps-api'));
 						}
 					}
+
+					if(isset($class::$tabs)){
+						wp_enqueue_script('custom_post_tabs', $base::url('lib/js/utils/tabs.js'), array('jquery'));
+						if(isset($class::$formats)){
+							wp_enqueue_script('custom_post_formats', $base::url('lib/js/utils/post_formats.js'), array('jquery'));
+						}
+					}
+
+					if(isset($class::$hide_custom_fields) && $class::$hide_custom_fields){
+						add_action('admin_print_scripts', function(){ ?>
+							<script>
+							jQuery(function($){
+								$('#normal-sortables').hide();
+							});
+							</script>
+						<?php }, 99);
+					}
+
 				}
 
 			});

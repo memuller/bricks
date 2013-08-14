@@ -4,11 +4,14 @@
 
 		static $name ;
 		static $creation_fields ;
+		static $labels ;
+		static $formats ;
 		static $editable_by = array();
 		static $collumns = array();
 		static $actions = array();
 		static $absent_collumns = array();
 		static $absent_actions = array('quick-edit');
+		static $hide_custom_fields = true ; 
 		static $rateable = false ;
 		static $tabs = false;
 		static $belongs_to ;
@@ -22,21 +25,46 @@
 		}		
 		
 		static function build(){
-			$class = get_called_class(); $namespace = get_namespace($class); 
+			$class = get_called_class(); $namespace = get_namespace($class); $domainspace = strtolower($namespace);
+			if(isset(static::$labels)) static::$creation_fields['labels'] = static::$labels ; 
 			$presenter = $namespace.'\Presenters\Base';
-			add_action('init', $class.'::create_post_type' ) ;
+			
+			if(isset(static::$formats)){
+				static::$fields['_revision_post_format'] = array('type' => 'hidden', 'required' => true, 'default' => static::$formats[0]);
+				foreach (static::$formats as $format) {
+					$format = sibling_class(ucfirst($format), $class);
+					static::$fields = array_merge(static::$fields, $format::$fields);
+					if(!isset(static::$tabs)) static::$tabs = array();
+					static::$tabs[$format::$labels['singular_name']] = array_keys($format::$fields);
+				}
+				add_action('edit_form_advanced', function() use($class, $fields_to_use) {
+					$screen = get_current_screen() ; 
+					if($screen->post_type == $class::$name){
+						global $post ; $format = get_post_meta( $post->ID, '_revision_post_format', true );
+						if(!$format) $format = $class::$formats[0];
+						echo '<input name="pedia[_revision_post_format]" id="_revision_post_format" value="'.$format.'" type="hidden">' ;
+					}
+				});
+			}
+
+
+			do_action( 'build_custom_post_formats-'.static::$name);
 			add_action('init', $class.'::create_post_type' ) ;
 			$editable_by = $class::$editable_by ; $fields = $class::$fields ;
-
 			//
 			if(static::$tabs){
-				add_action('edit_form_advanced', function() use($class, $presenter){
+
+				add_action('edit_form_after_title', function() use($class, $presenter){
 					$screen = get_current_screen();
 					if($screen->post_type == $class::$name){
-						$presenter::render('admin/defaults/tabbed', array(
+						$params = array(
 							'presenter' => $presenter, 'tabs' => $class::$tabs, 
 							'type' => $class::$name, 'class' => $class, 'object' => new $class()
-						));
+						);
+						if(isset($class::$formats)){
+							$params['data'] = $class::$formats ; 
+						}
+						$presenter::render('admin/defaults/tabbed', $params);
 					}
 				});
 			}

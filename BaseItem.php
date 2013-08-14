@@ -10,6 +10,7 @@
 		function __get($name){
 			if($name == 'id') $name = 'ID';
 			if($name == 'content') $name = 'post_content';
+			if($name == 'post_format') $name = '_revision_post_format' ;
 
 			if(strstr($name, '-')){
 				list($name, $attribute) = explode('-', $name) ;
