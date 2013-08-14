@@ -169,6 +169,11 @@
 			return $base::url($arg);
 		}
 
+		static function path($arg){
+			$class = get_called_class(); $base = get_namespace($class) . '\Plugin';
+			return $base::path($arg);
+		}
+
 		static function render_404(){
 			status_header( 404 );
 			nocache_headers();
