@@ -72,9 +72,13 @@
 							}
 						}
 						$placing = isset($options['placing']) ? $options['placing'] : 'side';
-						add_meta_box($class::$name.'-'.$metabox, $options['name'] , function() use ($class, $fields_to_use) {
+						$name = isset($options['name']) ? $options['name'] : ucfirst($metabox) ;
+						add_meta_box($class::$name.'-'.$metabox, $name , function() use ($class, $fields_to_use, $metabox) {
 							$object = new $class(); $presenter = get_namespace($class).'\Presenters\Base'; 
-							$presenter::render('admin/defaults/metabox', array( 'type' => $class::$name, 'object' => $object, 'fields' => $fields_to_use ));
+							$domain = strtolower(get_namespace($class));
+							$table_hook = sprintf("%s-%s-%s-metabox-table", $domain, $class::$name, $metabox );
+							$presenter::render('admin/defaults/metabox', array( 'type' => $class::$name, 'object' => $object, 'fields' => $fields_to_use, 'table_hook' => $table_hook ));
+							do_action(sprintf("%s-%s-%s-metabox", $domain, $class::$name, $metabox));
 						}, $class::$name, $placing, 'high');
 					}
 
