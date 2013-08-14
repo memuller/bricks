@@ -112,7 +112,7 @@
 						}
 						# archive
 						if(isset($options['archive'])){
-							if(!isset($wp_query->query['archive'])) continue; 
+							if(!isset($wp_query->query['post_type'])) continue; 
 							if(!is_archive() && $options['archive'] != $wp_query->query['post_type'])
 								continue; 
 						}
@@ -224,7 +224,7 @@
 			}
 
 			add_action('save_post', function($post_id) use($base, $namespace) {
-				
+				$domain = strtolower(get_namespace($base));
 				if( defined('DOING_AUTOSAVE') && DOING_AUTOSAVE) return ;
 
 				if(isset($_POST['custom_single']) && in_array($_POST['custom_single'], $base::$custom_singles) ){
@@ -236,7 +236,6 @@
 				}
 
 				if(!isset($object)) return ;
-				
 				foreach ($class::$fields as $field_name => $field_options) {
 					if(isset($object[$field_name]) ){
 						update_post_meta($post_id, $field_name, $object[$field_name]) ;
@@ -244,6 +243,8 @@
 						update_post_meta($post_id, $field_name, 0);
 					}
 				}
+				do_action(sprintf('%s-%s-save', $domain, $class::$name), $post_id, $object);
+
 			});
 
 			add_action('admin_enqueue_scripts', function() use ($base, $namespace) {
