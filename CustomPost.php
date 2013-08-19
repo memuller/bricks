@@ -240,7 +240,7 @@
 				if(array_key_exists($field, static::$fields)){
 					$meta[$field] = $value ;
 				} else {
-					foreach (array('title', 'name', 'content', 'excerpt', 'author', 'name') as $name) {
+					foreach (array('title', 'name', 'content', 'excerpt', 'author', 'name', 'status') as $name) {
 					 	if($field == $name){
 					 		$new_field = "post_$field" ;
 					 		$post[$new_field] = $value ;
