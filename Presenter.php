@@ -278,7 +278,7 @@
 	}
 
 	function hidden_field($name, $value){
-		printf("<input type='hidden' name='%s' value='%s' >", $name, $value);	
+		printf("<input id='%s' type='hidden' name='%s' value='%s' >", $name, $name, $value);	
 	}
 
 	function flash($arg){
