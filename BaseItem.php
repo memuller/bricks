@@ -9,6 +9,7 @@
 
 		function __get($name){
 			if($name == 'id') $name = 'ID';
+			if($name == 'title') $name = 'post_title';
 			if($name == 'content') $name = 'post_content';
 			if($name == 'post_format') $name = '_revision_post_format' ;
 
