@@ -114,7 +114,7 @@
 						# archive
 						if(isset($options['archive'])){
 							if(!isset($wp_query->query['post_type'])) continue; 
-							if(!is_archive() && $options['archive'] != $wp_query->query['post_type'])
+							if(!is_archive() || $options['archive'] != $wp_query->query['post_type'])
 								continue; 
 						}
 						
