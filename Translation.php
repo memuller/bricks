@@ -76,6 +76,7 @@
 			}
 			add_filter('gettext', function($translated_text, $text, $domain) use($class, $namespace) {
 				$app = strtolower($namespace); $translations_var = $app.'_translations' ;
+				$translated_text = apply_filters('atlas_translations', $translated_text, $text, $domain);
 				$text = str_replace('-', '_', $text);
 				if(!isset($class::$fields[$text])) return $translated_text ;
 				
