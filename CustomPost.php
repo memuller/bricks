@@ -189,7 +189,8 @@
 				add_action('admin_head', function() use ($class){
 					$screen = get_current_screen(); 
 					if($screen->post_type == $class::$name){
-						add_filter('post_row_actions', function($actions) use ($class) {
+						$filter = $class::$creation_fields['hierarchical'] ? 'page_row_actions' : 'post_row_actions' ;						
+						add_filter($filter, function($actions) use ($class) {
 							foreach ($class::$absent_actions as $name) {
 								$name = $name == 'quick-edit' ? 'inline hide-if-no-js' : $name;
 								unset($actions[$name]); 
