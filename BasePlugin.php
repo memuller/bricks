@@ -291,7 +291,7 @@
 						add_action('admin_print_scripts', function(){ ?>
 							<script>
 							jQuery(function($){
-								$('#normal-sortables').hide();
+								$('#postcustom').hide();
 							});
 							</script>
 						<?php }, 99);
