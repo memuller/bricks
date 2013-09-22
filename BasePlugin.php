@@ -93,6 +93,7 @@
 							$options['pagename'] = $options['page'];
 						if(isset($options['tax'])) 
 							$options['taxonomy'] = $options['tax'] ;
+
 						# method
 						if(isset($options['method'])){ 
 							$options['method'] = strtoupper($options['method']);

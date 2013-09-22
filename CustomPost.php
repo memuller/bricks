@@ -173,7 +173,7 @@
 							foreach ($class::$actions as $action => $options) {
 								if(isset($options['capability']) && !current_user_can($options['capability']) ) continue ;
 								if(isset($options['condition']) && !$object->$options['condition']() ) continue ;
-								$link = sprintf('edit.php?post_type=%s&id=%s&action=%s&page=%s', $class::$name, $object->id, $action, $action);
+								$link = sprintf('edit.php?post_type=%s&id=%s&action=%s', $class::$name, $object->id, $action, $action);
 								$actions[$action] = sprintf("<a href='%s'>%s</a>", $link, $options['label']);									
 								
 							}
