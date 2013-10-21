@@ -13,7 +13,6 @@
 		static $absent_actions = array('quick-edit');
 		static $hide_custom_fields = true ; 
 		static $rateable = false ;
-		static $tabs = false;
 		static $belongs_to ;
 		static $has = array(); 
 		static $per_page = 10;
@@ -22,20 +21,19 @@
 
 		static function create_post_type(){
 			register_post_type( static::$name, static::$creation_fields ) ;
-		}		
-		
+		}
+
 		static function build(){
 			$class = get_called_class(); $namespace = get_namespace($class); $domainspace = strtolower($namespace);
 			if(isset(static::$labels)) static::$creation_fields['labels'] = static::$labels ; 
 			$presenter = $namespace.'\Presenters\Base';
 			
-			if(isset(static::$formats)){
-				static::$fields['_revision_post_format'] = array('type' => 'hidden', 'required' => true, 'default' => static::$formats[0]);
-				foreach (static::$formats as $format) {
+			if(isset($class::$formats)){
+				$class::$fields['_revision_post_format'] = array('type' => 'hidden', 'required' => true, 'default' => static::$formats[0]);
+				foreach ($class::$formats as $format) {
 					$format = sibling_class(ucfirst($format), $class);
-					static::$fields = array_merge(static::$fields, $format::$fields);
-					if(!isset(static::$tabs)) static::$tabs = array();
-					static::$tabs[$format::$labels['singular_name']] = array_keys($format::$fields);
+					$class::$fields = array_merge($class::$fields, $format::$fields);
+					$class::$tabs[$format::$labels['singular_name']] = array_keys($format::$fields);
 				}
 				add_action('edit_form_advanced', function() use($class, $fields_to_use) {
 					$screen = get_current_screen() ; 
@@ -52,8 +50,7 @@
 			add_action('init', $class.'::create_post_type' ) ;
 			$editable_by = $class::$editable_by ; $fields = $class::$fields ;
 			//
-			if(static::$tabs){
-
+			if(isset($class::$tabs)){
 				add_action('edit_form_after_title', function() use($class, $presenter){
 					$screen = get_current_screen();
 					if($screen->post_type == $class::$name){
