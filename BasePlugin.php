@@ -265,7 +265,8 @@
 					foreach ($class::$fields as $field => $options) {
 						if( 'date' == $options['type'] ){
 							wp_enqueue_script('jquery-datepick', $base::url('lib/js/jquery-datepick/jquery.datepick.js'), array('jquery'));
-							wp_enqueue_script('jquery-datepick-br', $base::url('lib/js/jquery-datepick/jquery.datepick-pt-BR.js'), array('jquery-datepick'));
+							if(WPLANG == 'pt_BR')
+								wp_enqueue_script('jquery-datepick-br', $base::url('lib/js/jquery-datepick/jquery.datepick-pt-BR.js'), array('jquery-datepick'));
 							wp_enqueue_style('jquery-datepick', $base::url('lib/js/jquery-datepick/smoothness.datepick.css'));
 							wp_enqueue_script('datepicker', $base::url('lib/js/utils/datepicker.js'), array('jquery-datepick-br'));
 						}
