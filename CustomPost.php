@@ -81,7 +81,7 @@
 					$screen = get_current_screen() ; 
 					if($screen->post_type == $class::$name){
 						$object = new $class(); $presenter = get_namespace($class).'\Presenters\Base';
-						$presenter::render('admin/defaults/metabox', array( 'type' => $class::$name, 'object' => $object, 'fields' => $fields_to_use ));
+						$presenter::render('admin/defaults/metabox', array( 'type' => $class::$name, 'object' => $object, 'fields' => $fields_to_use, 'description_colspan' => false ));
 					}
 				});
 				unset($editable_by['form_advanced']);
