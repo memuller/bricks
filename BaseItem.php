@@ -8,6 +8,7 @@
 		static $meta_type = 'post';
 
 		function __get($name){
+			if($name == 'permalink') return get_permalink($this->base->ID);
 			if($name == 'id') $name = 'ID';
 			if($name == 'title') $name = 'post_title';
 			if($name == 'content') $name = 'post_content';
