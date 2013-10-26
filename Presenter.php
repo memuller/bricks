@@ -12,13 +12,18 @@
 
 		static function render_to_string($view, $scope=array()){
 			global $plugin_haml_parser ; 
-			$path = get_called_class(); $path = explode('\\', $path); $path = $path[0];
-			$path = "\\".$path.'\Plugin' ; $path = $path::path('views'.DIRECTORY_SEPARATOR);
+			$plugin = get_called_class(); $plugin = explode('\\', $plugin); $plugin = $plugin[0];
+			$plugin = "\\".$plugin.'\Plugin' ; $path = $plugin::path('views'.DIRECTORY_SEPARATOR);
 			$file = get_theme_root() . DIRECTORY_SEPARATOR . get_stylesheet() . DIRECTORY_SEPARATOR . 'views'. DIRECTORY_SEPARATOR. $view . '.php' ;
-			if( ! file_exists($file))
+			if (! file_exists($file)){
 				$file = $path . $view . '.php' ;
+				if (! file_exists($file)){
+					$file = $plugin::path('lib'.DIRECTORY_SEPARATOR.'views'.DIRECTORY_SEPARATOR).$view.'.php' ;
+					debug($file);
+				}
+			}
 			
-			if(file_exists($file)){
+			if (file_exists($file)){
 				$scope['presenter'] = get_called_class();
 				extract($scope) ;
 				ob_start() ;

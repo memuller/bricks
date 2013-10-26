@@ -68,7 +68,7 @@
 					$screen = get_current_screen();
 					$object = new $class(); $presenter = get_namespace($class).'\Presenters\Base'; 
 					$partial = $action == 'add' ? 'form_table' : 'metabox' ;
-					$presenter::render("admin/defaults/$partial", array( 'type' => $class::$name, 'object' => $object, 'fields' => $class::$fields ));
+					$presenter::render("admin/$partial", array( 'type' => $class::$name, 'object' => $object, 'fields' => $class::$fields ));
 				}, 10, 2);
 			}
 
