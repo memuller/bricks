@@ -19,7 +19,6 @@
 				$file = $path . $view . '.php' ;
 				if (! file_exists($file)){
 					$file = $plugin::path('lib'.DIRECTORY_SEPARATOR.'views'.DIRECTORY_SEPARATOR).$view.'.php' ;
-					debug($file);
 				}
 			}
 			
