@@ -89,6 +89,20 @@
 						}
 					});
 				}
+
+				foreach(array('edit_user_profile_update', 'personal_options_update') as $hook){
+					add_action($hook, function() use($class, $presenter) {
+						$user = get_user_by( 'id', $_POST['user_id'] );
+						if(in_array($class::$name, $user->roles) || ($class::$allow_admin && in_array('administrator', $user->roles)) ){
+							$fields = $_POST[$class::$name] ;
+							foreach ($class::$fields as $field => $options) {
+								if(isset($fields[$field])){
+									update_usermeta( $user->ID, $field, $fields[$field] );
+								}	
+							}
+						}
+					});
+				}
 			}
 
 		}
