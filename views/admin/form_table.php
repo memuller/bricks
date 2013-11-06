@@ -37,6 +37,10 @@
 						case 'set':
 							require 'fields/set.php';
 						break;
+						
+						case 'media':
+							require 'fields/media.php';
+						break;
 
 						default:
 							require 'fields/default.php';	
