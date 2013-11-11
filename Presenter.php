@@ -318,13 +318,18 @@
 	}
 
 	function debug($arg, $name=''){ 
-		if(function_exists('dbgx_trace_var' || false)){
+		if(function_exists('dbgx_trace_var')){
 			if('' == $name) $name = false ;
 			dbgx_trace_var($arg, $name);
+		}
+		
+		if(! is_string($arg))
+			$arg = print_r($arg, true);
+		
+		if(strlen($arg) < 100 && strpos(`uname`, 'Darwin') !== false){
+			exec("terminal-notifier -title 'PHP Debug: $name' -message '$arg' ");
 		} else {
-			if(! is_string($arg))
-				$arg = print_r($arg, true); 
-			trigger_error($name.':'.$arg, E_USER_WARNING);
+			trigger_error($name.':'.$arg, E_USER_WARNING);		
 		}
 	}
 
