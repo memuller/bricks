@@ -58,7 +58,8 @@
 					if($screen->post_type == $class::$name){
 						$params = array(
 							'presenter' => $presenter, 'tabs' => $class::$tabs, 
-							'type' => $class::$name, 'class' => $class, 'object' => new $class()
+							'type' => $class::$name, 'class' => $class, 'object' => new $class(),
+							
 						);
 						if(isset($class::$formats)){
 							$params['data'] = $class::$formats ; 
@@ -100,11 +101,11 @@
 						}
 						$placing = isset($options['placing']) ? $options['placing'] : 'side';
 						$name = isset($options['name']) ? $options['name'] : ucfirst($metabox) ;
-						add_meta_box($class::$name.'-'.$metabox, $name , function() use ($class, $fields_to_use, $metabox) {
+						add_meta_box($class::$name.'-'.$metabox, $name , function() use ($class, $fields_to_use, $metabox, $placing) {
 							$object = new $class(); $presenter = get_namespace($class).'\Presenters\Base'; 
 							$domain = strtolower(get_namespace($class));
 							$table_hook = sprintf("%s-%s-%s-metabox-table", $domain, $class::$name, $metabox );
-							$presenter::render('admin/metabox', array( 'type' => $class::$name, 'object' => $object, 'fields' => $fields_to_use, 'table_hook' => $table_hook ));
+							$presenter::render('admin/metabox', array( 'type' => $class::$name, 'object' => $object, 'fields' => $fields_to_use, 'table_hook' => $table_hook, 'placing' => $placing ));
 							do_action(sprintf("%s-%s-%s-metabox", $domain, $class::$name, $metabox));
 						}, $class::$name, $placing, 'high');
 					}

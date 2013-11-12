@@ -1,4 +1,4 @@
-<?php  
+<?php  global $metabox_placing ; $metabox_placing = $placing ;
 	foreach ($fields as $field => $options) {
 		if($options['type'] == 'hidden'){
 			require 'partials/field_handler.php' ;
