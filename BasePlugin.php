@@ -45,7 +45,7 @@
 
 			if(static::$has_translations){
 				require( static::path('base/Translation.php'));
-				$class = $namespace.'Translations' ;
+				$class = $namespace.'Translation' ;
 				$class::build();
 			}
 
@@ -232,13 +232,14 @@
 				if(isset($_POST['custom_single']) && in_array($_POST['custom_single'], $base::$custom_singles) ){
 					$class = $namespace.$_POST['custom_single']; $object = $_POST[$_POST['custom_single']];
 				}
-
-				if( isset($_POST['post_type']) && in_array(ucfirst($_POST['post_type']), $base::$custom_posts )){
+				
+				if( isset($_POST['post_type']) && ( in_array(ucfirst($_POST['post_type']), $base::$custom_posts) || 'translation' == $_POST['post_type']) ){
 					$object = $_POST[$_POST['post_type']]; $class = $namespace. ucfirst($_POST['post_type']);	
 				}
 
 				if(!isset($object)) return ;
 				foreach ($class::$fields as $field_name => $field_options) {
+
 					if(isset($object[$field_name]) ){
 						update_post_meta($post_id, $field_name, $object[$field_name]) ;
 					} elseif ($class::$fields[$field_name]['type'] == 'boolean') {
