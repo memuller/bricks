@@ -56,6 +56,10 @@
 							require 'fields/array.php';
 						break;
 
+						case 'list':
+							require 'fields/list.php';
+						break;
+
 						case 'set':
 							require 'fields/set.php';
 						break;
