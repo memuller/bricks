@@ -274,7 +274,7 @@
 	}
 
 	function description($text, $classes=''){
-		printf("<span style='display:block;' class='description $classes'>%s</span>", $text);
+		printf("<span style='display:block; font-weight:normal;' class='description $classes'>%s</span>", $text);
 	}
 
 	function label($label, $for, $classes=null){
