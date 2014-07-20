@@ -121,6 +121,7 @@
 
 		function parent(){
 			$field = static::$belongs_to ;
+			if(!$this->$field) return null ;
 			$parent_class = sibling_class(ucfirst($field), get_called_class());
 			return new $parent_class($this->$field);
 		}
