@@ -113,15 +113,9 @@
 				});
 			}
 
-			if(!empty(static::$has)){
-				foreach (static::$has as $object) {
-					static::$collumns[$object] = ucfirst($object) . 's' ;
-				}
-			}
 
 			if(!empty(static::$belongs_to)){
 				$parent_class = sibling_class(ucfirst(static::$belongs_to), get_called_class());
-				static::$collumns[static::$belongs_to] = ucfirst($parent_class::$name) ;
 				
 				if(is_admin()){
 					add_filter('pre_get_posts', function($query) use ($class){
