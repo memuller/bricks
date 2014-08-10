@@ -204,6 +204,26 @@
 					});
 				}
 			}
+			if(isset($class::$taxonomies) && !empty($class::$taxonomies)){
+				add_action("$domainspace-".$class::$name."-save", function($post_id, $post) use($class){
+					$object = new $class($post_id);
+					foreach ($class::$taxonomies as $tax) {
+						$terms = $object->terms($tax);
+						if($terms){
+							$parents = array();
+							foreach ($terms as $term) {
+						  		if($term->parent){
+									$parent = get_term_by('id', $term->parent, $tax);
+									$parents[]= $parent->term_id ;
+						  		}
+							}
+							if(!empty($parents)){
+								wp_set_post_terms($post_id, $parents, $tax, true);
+							}
+					  	}
+					}
+			  }, 10, 2);	
+			}
 
 			if($class::$rateable){
 				$class::$fields = array_merge($class::$fields, array(
@@ -236,12 +256,12 @@
 					$meta[$field] = $value ;
 				} else {
 					foreach (array('title', 'name', 'content', 'excerpt', 'author', 'name', 'status') as $name) {
-					 	if($field == $name){
-					 		$new_field = "post_$field" ;
-					 		$post[$new_field] = $value ;
-					 		unset($post[$field]) ;
-					 		$field = $new_field ; 
-					 	}
+						if($field == $name){
+							$new_field = "post_$field" ;
+							$post[$new_field] = $value ;
+							unset($post[$field]) ;
+							$field = $new_field ; 
+						}
 					 } 
 					$post[$field] = $value ;
 				}
