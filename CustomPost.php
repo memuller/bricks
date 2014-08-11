@@ -293,6 +293,15 @@
 				$params['posts_per_page'] = $params['only'];
 				unset($params['only']);
 			}
+
+			if(isset($params['not'])){
+				if(!is_array($params['not'])) $params['not'] = array($params['not']);
+				foreach ($params['not'] as $i => $item) {
+					if(!is_numeric($item)) $params['not'][$i] = $item->ID;
+				}
+				$params['post__not_in'] = $params['not'];
+				unset($params['not']);
+			}
 			
 			if(isset($params['order_by_meta'])){
 				$params['meta_key'] = $params['order_by_meta'];
