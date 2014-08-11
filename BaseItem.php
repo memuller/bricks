@@ -170,9 +170,13 @@
 			}
 		}
 
+		function terms($taxonomy){
+			return wp_get_object_terms($this->ID, $taxonomy) ;
+		}
+
 		function get_term_attributes($taxonomy, $attribute='name'){
 			if(empty($attribute)) $attribute = 'name' ;
-			$terms = wp_get_object_terms($this->ID, $taxonomy) ;
+			$terms = $this->terms($taxonomy);
 			if(is_array($terms)){
 				$returnable = array();
 				foreach ($terms as $term) {
