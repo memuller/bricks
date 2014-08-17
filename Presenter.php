@@ -268,6 +268,10 @@
 	function html_attributes($args){
 		$kv_pairs = "" ;
 		foreach ($args as $name => $value) {
+			if($name == 'selected'){
+				$kv_pairs .= $value ? 'selected ' : ' ';
+				continue;
+			}
 			$kv_pairs .= sprintf(" %s=\"%s\" ", $name, $value) ;
 		}
 		echo $kv_pairs ;
