@@ -1,6 +1,5 @@
 jQuery(document).ready(function ($) {
 	$('.upload.media.button').on('click', function(event){
-		console.log('=D');
 		var $this = $(this); event.preventDefault();
 		var file_frame = wp.media.frames.file_frame = wp.media({
 			multiple: false

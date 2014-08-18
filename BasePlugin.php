@@ -277,6 +277,7 @@
 						}
 
 						if ('media' == $options['type']) {
+							wp_enqueue_media();
 							wp_enqueue_script('media_upload', $base::url('lib/js/utils/media_upload.js'), array('jquery'));
 						}
 
