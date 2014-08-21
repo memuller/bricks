@@ -159,10 +159,9 @@
 				if( ! is_numeric($base::$db_version) || floatval($db_version) < $base::$db_version) {
 					if(! empty($base::$custom_taxonomies)) \CustomTaxonomy::build_database();
 					do_action($prefix.'_update', $base::$db_version);
-						
 					foreach (array_merge($base::$custom_classes, $base::$custom_users) as $class) {
 						$class = $namespace. $class ;
-						$class::build_database();
+						if(method_exists($class, 'build_database')) $class::build_database();
 					}
 
 					if(!empty($base::$absent_roles) || false ){
