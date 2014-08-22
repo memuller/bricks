@@ -289,6 +289,7 @@
 			);
 			$params = array_merge($default_params, $params);
 			
+
 			if(isset($params['only'])){
 				$params['posts_per_page'] = $params['only'];
 				unset($params['only']);
@@ -311,6 +312,23 @@
 
 				unset($params['order_by_meta']);
 			}
+
+			foreach(static::$fields as $field => $options){
+				if(isset($params[$field])){
+					if(!isset($params['meta_query'])){
+						$params['meta_query'] = array();
+					} else { 
+						if(!isset($params['meta_query']['relation'])) 
+							$params['meta_query']['relation'] = 'AND' ; 
+					}
+					$params['meta_query'][]= array(
+						'key' => $field,
+						'value' => $params[$field]
+					);
+					unset($params[$field]);
+				}
+			}
+
 			foreach (static::taxonomies() as $taxonomy) {
 				if(isset($params[$taxonomy->rewrite['slug']])){
 					if(!isset($params['tax_query'])) $params['tax_query'] = array() ;
