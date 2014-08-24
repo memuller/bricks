@@ -189,6 +189,7 @@
 		static function recursive_enqueue($type, $name, $kind='main'){
 			$function = $type == 'script' ? 'wp_enqueue_script' : 'wp_enqueue_style';	
 			$function($name); 
+
 			$pluralized = $type.'s'; $list = static::$$pluralized ;
 			if(!empty($list[$name]['dependencies'])){
 				foreach ($list[$name]['dependencies'] as $dep) {
@@ -223,6 +224,7 @@
 					break;
 
 					case 'is':
+						if('any' == $value) { break; }
 						if('single' == $value && !is_single()){ $valid = false; break; }
 						if('archive' == $value && !is_archive()){ $valid = false; break; }
 						if('home' == $value && !is_home()){ $valid = false; break; }
