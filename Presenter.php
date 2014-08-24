@@ -81,7 +81,8 @@
 				add_action('init', function() use($class){
 					foreach (array('scripts', 'styles') as $resource) {
 						foreach ($class::$$resource as $name => $options) {
-							$default_args = array('dependencies' => array('jquery'), 'version' => false, 'in_footer' => false);
+							$default_args = array('dependencies' => array(), 'version' => false, 'in_footer' => false);
+							if($resource == 'scripts') $default_args['dependencies'][]= 'jquery';
 							if('/' == $options['source'][0]){
 								if(isset($options['from']) &&  'plugin' == $options['from']){
 									$options['source'] = $class::url($options['source']);
