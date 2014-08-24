@@ -350,6 +350,10 @@
 			return static::all($params);
 		}
 
+		static function first($params=array()){
+			$result = static::all(array_merge($params), array('only' => 1));
+			return !empty($result) ? $result[0] : null ;
+		}
 
 		public function rate($value){
 			if(!static::$rateable) return false ;
