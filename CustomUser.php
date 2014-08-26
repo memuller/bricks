@@ -92,7 +92,7 @@
 				foreach (array('show_user_profile', 'edit_user_profile') as $hook) {
 					add_action($hook, function($user) use($class, $presenter){
 						if(in_array($class::$name, $user->roles) || ($class::$allow_admin && in_array('administrator', $user->roles)) ){
-							$object = new $class(); $fields_to_use = $class::$fields ;
+							$object = new $class($user); $fields_to_use = $class::$fields ;
 							$presenter::render('admin/metabox', array( 'type' => $class::$name, 'object' => $object, 'fields' => $fields_to_use, 'description_colspan' => false ));
 						}
 					});
