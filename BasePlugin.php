@@ -256,6 +256,13 @@
 					$name = $screen->taxonomy ;
 				} elseif (in_array(ucfirst($screen->post_type), $base::$custom_posts)) {
 					$name = $screen->post_type;
+				} elseif($screen->base == 'profile' || $screen->base == 'user-edit') {
+					global $profileuser;
+					$role = array_intersect($profileuser->roles, 
+							array_map(function($role){return strtolower($role);}, $base::$custom_users));
+					if(!empty($role)){
+						$name = $role[0];
+					}
 				}
 				if(isset($name)){
 					wp_enqueue_script( $name, $base::url( "js/admin/$name.js") );
