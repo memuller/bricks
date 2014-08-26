@@ -42,6 +42,7 @@
 
 		static function is_default(){
 			global $wp_roles;
+			if (!isset($wp_roles)) $wp_roles = new WP_Roles;
 			return in_array(static::$name, array_keys($wp_roles->roles));
 		}
 
