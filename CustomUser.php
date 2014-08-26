@@ -40,7 +40,15 @@
 			echo date($format, strtotime($this->user_registered));
 		}
 
-		static function build_database(){
+		static function is_default(){
+			global $wp_roles;
+			return in_array(static::$name, array_keys($wp_roles->roles));
+		}
+
+		static function build_database(){ 
+			
+			if(static::is_default()) return ;
+
 			remove_role(static::$name);
 			$inherits_from = get_role( static::$inherits_from ); 
 			if( !empty(static::$capabilities) ){
