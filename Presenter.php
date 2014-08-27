@@ -225,6 +225,7 @@
 
 					case 'is':
 						if('any' == $value) { break; }
+						if('singular' == $value && !is_singular()){ $valid = false; break; }
 						if('single' == $value && !is_single()){ $valid = false; break; }
 						if('archive' == $value && !is_archive()){ $valid = false; break; }
 						if('home' == $value && !is_home()){ $valid = false; break; }
