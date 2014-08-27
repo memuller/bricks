@@ -498,4 +498,8 @@ function somatic_attach_external_image( $url = null, $post_id = null, $thumb = n
 
         }
     }
+
+    function first($array){
+    	return $array[0];
+    }
  ?>
