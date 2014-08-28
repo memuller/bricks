@@ -11,6 +11,10 @@ jQuery(document).ready(function ($) {
 			
 			$field.val(attachment.url) ;
 			$this.val(attachment.filename);
+			preview = '#'+$field.attr('id')+'-preview';
+			if($(preview).is('*')){
+				$(preview).attr('src', attachment.url);
+			}
 		});
 		return file_frame.open();
 	});
