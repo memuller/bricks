@@ -14,6 +14,7 @@ jQuery(document).ready(function ($) {
 			preview = '#'+$field.attr('id')+'-preview';
 			if($(preview).is('*')){
 				$(preview).attr('src', attachment.url);
+				$(preview).show();
 			}
 		});
 		return file_frame.open();
