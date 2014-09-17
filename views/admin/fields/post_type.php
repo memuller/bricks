@@ -1,4 +1,4 @@
-<?php $posts = get_posts(array('post_type' => $options['post_type']));?>
+<?php $posts = get_posts(array('post_type' => $options['post_type'], 'posts_per_page' => -1));?>
 <select <?php html_attributes(array('name' => $name, 'id' => $id, 'class' => 'text')) ?>  <?php echo $html ?> <?php echo $validations ?> >
 <?php foreach ($posts as $post) {?>
 	<option value="<?php echo $post->ID ?>" <?php echo $object->$field == $post->ID ? ' selected' : ''?> >
