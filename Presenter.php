@@ -202,52 +202,59 @@
 		static function enqueue_scripts(){
 			global $wp_query;
 			foreach(static::$includes as $resource){
-				$condition = array_keys($resource); $condition =$condition[0]; $value = $resource[$condition];
-				$valid = true; $kind = 'main';
-				switch ($condition) {
-					case 'page':
-						if(!is_page($value)) $valid = false;
-					break;
-					
-					case 'single':
-						if(!is_single()){ $valid = false; break; }
-						if('any' != $value && ! $value == $wp_query->query['post_type']) $valid = false;
-					break;
-
-					case 'archive':
-						if(!is_archive()){ $valid = false; break; }
-						if('any' != $value && ! $value == $wp_query->query['post_type']) $valid = false;
-					break;
-
-					case 'taxonomy':
-						if(!is_tax($value)) $valid = false;
-					break;
-
-					case 'is':
-						if('any' == $value) { break; }
-						if('singular' == $value && !is_singular()){ $valid = false; break; }
-						if('single' == $value && !is_single()){ $valid = false; break; }
-						if('archive' == $value && !is_archive()){ $valid = false; break; }
-						if('home' == $value && !is_home()){ $valid = false; break; }
-						if('search' == $value && !is_search()){ $valid = false; break; }
-						if('taxonomy' == $value && !is_tax()){ $valid = false; break; }
-						if('tag' == $value && !is_tag()){ $valid = false; break; }
-						if('category' == $value && !is_category()){ $valid = false; break; }
-						if('login' == $value){
-							if( strncmp($_SERVER['REQUEST_URI'], '/wp-login.php', strlen('/wp-login.php')) ){
-								$kind = 'login'; 
-							} else { $valid = false ; break; }
-						}
-					break;
-
+				$conditions = $resource; $assets = array();
+				foreach ($resource as $key => $value) {
+					if(in_array($key, array('scripts', 'styles'))){
+						$assets[$key] = $value;
+						unset($conditions[$key]);
+					}
 				}
+				
+				$valid = true; $kind = 'main';
+				foreach ($conditions as $condition => $value) {					
+					switch ($condition) {
+						case 'page':
+							if(!is_page($value)) $valid = false;
+						break;
+						
+						case 'single':
+							if(!is_single()){ $valid = false; break; }
+							if('any' != $value && ! $value == $wp_query->query['post_type']) $valid = false;
+						break;
+
+						case 'archive':
+							if(!is_archive()){ $valid = false; break; }
+							if('any' != $value && ! $value == $wp_query->query['post_type']) $valid = false;
+						break;
+
+						case 'taxonomy':
+							if(!is_tax($value)) $valid = false;
+						break;
+
+						case 'is':
+							if('any' == $value) { break; }
+							if('singular' == $value && !is_singular()){ $valid = false; break; }
+							if('single' == $value && !is_single()){ $valid = false; break; }
+							if('archive' == $value && !is_archive()){ $valid = false; break; }
+							if('home' == $value && !is_home()){ $valid = false; break; }
+							if('search' == $value && !is_search()){ $valid = false; break; }
+							if('taxonomy' == $value && !is_tax()){ $valid = false; break; }
+							if('tag' == $value && !is_tag()){ $valid = false; break; }
+							if('category' == $value && !is_category()){ $valid = false; break; }
+							if('login' == $value){
+								if( strncmp($_SERVER['REQUEST_URI'], '/wp-login.php', strlen('/wp-login.php')) ){
+									$kind = 'login'; 
+								} else { $valid = false ; break; }
+							}
+						break;
+					}
+					if(!$valid) break;
+				}
+
 				if(!$valid) continue;
-				foreach (array('script', 'style') as $type) {
-					$list = $type.'s';
-					if(isset($resource[$list])){
-						foreach ($resource[$list] as $asset) {
-							static::recursive_enqueue($type, $asset, $kind);
-						}
+				foreach ($assets as $key => $value) {
+					foreach ($value as $asset) {
+						static::recursive_enqueue(rtrim($key, 's'), $asset, $kind);
 					}
 				}
 			}
