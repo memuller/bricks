@@ -247,6 +247,10 @@
 								} else { $valid = false ; break; }
 							}
 						break;
+						
+						case 'if':
+							if(!static::$value()) $valid = false;
+						break;
 					}
 					if(!$valid) break;
 				}
