@@ -247,7 +247,7 @@
 								} else { $valid = false ; break; }
 							}
 						break;
-						
+
 						case 'if':
 							if(!static::$value()) $valid = false;
 						break;
@@ -512,5 +512,13 @@ function somatic_attach_external_image( $url = null, $post_id = null, $thumb = n
 
     function first($array){
     	return $array[0];
+    }
+
+    function limit($arg, $limit=20, $more='...'){
+    	$size = strlen($arg);
+    	$arg = wordwrap($arg, $limit, '\n');
+    	$arg = explode('\n', $arg);
+
+    	return $size > $limit ? $arg[0].$more : $arg[0] ;
     }
  ?>
