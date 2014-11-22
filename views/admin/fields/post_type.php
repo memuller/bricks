@@ -1,4 +1,8 @@
-<?php $posts = get_posts(array('post_type' => $options['post_type']));?>
+<?php 
+	$params = array('post_type' => $options['post_type']);
+	if(isset($options['filter'])) $params = array_merge($params, $options['filter']);
+	$posts = get_posts($params);
+?>
 <select <?php html_attributes(array('name' => $name, 'id' => $id, 'class' => 'text')) ?>  <?php echo $html ?> <?php echo $validations ?> >
 <?php foreach ($posts as $post) {?>
 	<option value="<?php echo $post->ID ?>" <?php echo $object->$field == $post->ID ? ' selected' : ''?> >
