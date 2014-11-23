@@ -13,4 +13,6 @@
 	}
 	if(isset($options['required']) && $options['required'])
 		$validations = 'required';
+
+	$value = $object->$field;
 ?>

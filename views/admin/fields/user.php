@@ -8,7 +8,7 @@
 <select <?php html_attributes(array('name' => $name, 'id' => $id, 'class' => 'text')) ?>  <?php echo $html ?> <?php echo $validations ?> >
 	<?php if(!isset($options['required']) || !$options['required']) echo "<option value='0'>--</option>" ; ?>
 <?php foreach ($users as $user) {?>
-	<option value="<?php echo $user->ID ?>" <?php echo $object->$field == $user->ID ? ' selected' : ''?> >
+	<option value="<?php echo $user->ID ?>" <?php echo $value == $user->ID ? ' selected' : ''?> >
 		<?php echo $user->user_nicename ?>
 	</option>
 <?php } ?>

@@ -1,8 +1,7 @@
-
 <select <?php html_attributes(array('name' => $name, 'id' => $id, 'class' => 'text')) ?>  <?php echo $html ?> <?php echo $validations ?> >
-<?php foreach ($options['values'] as $value) {?>
-	<option value="<?php echo $value ?>" <?php echo $object->$field == $value ? ' selected' : ''?> >
-		<?php echo $value ?>
+<?php foreach ($options['values'] as $val) {?>
+	<option value="<?php echo $val ?>" <?php echo $value == $val ? ' selected' : ''?> >
+		<?php echo $val ?>
 	</option>
 <?php } ?>
 </select> 

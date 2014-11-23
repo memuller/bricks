@@ -27,6 +27,10 @@
 				<td <?php echo "style='$header_style'" ?>>
 					<?php switch ($options['type']) {
 						
+						case 'multiple':
+							require 'fields/multiple.php';
+						break;
+
 						case 'boolean':
 							require 'fields/boolean.php';
 						break;
