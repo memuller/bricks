@@ -156,6 +156,7 @@
 			switch (static::$fields[$field]['type']) {
 				case 'geo':
 				case 'array':
+				case 'multiple':
 					if(!maybe_unserialize($this->unfiltered_fields[$field])) return array();
 					return (array) maybe_unserialize($this->unfiltered_fields[$field]) ;
 					break;
