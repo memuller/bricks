@@ -40,7 +40,16 @@
 			echo date($format, strtotime($this->user_registered));
 		}
 
-		static function build_database(){
+		static function is_default(){
+			global $wp_roles;
+			if (!isset($wp_roles)) $wp_roles = new WP_Roles;
+			return in_array(static::$name, array_keys($wp_roles->roles));
+		}
+
+		static function build_database(){ 
+			
+			if(static::is_default()) return ;
+
 			remove_role(static::$name);
 			$inherits_from = get_role( static::$inherits_from ); 
 			if( !empty(static::$capabilities) ){
@@ -84,7 +93,7 @@
 				foreach (array('show_user_profile', 'edit_user_profile') as $hook) {
 					add_action($hook, function($user) use($class, $presenter){
 						if(in_array($class::$name, $user->roles) || ($class::$allow_admin && in_array('administrator', $user->roles)) ){
-							$object = new $class(); $fields_to_use = $class::$fields ;
+							$object = new $class($user); $fields_to_use = $class::$fields ;
 							$presenter::render('admin/metabox', array( 'type' => $class::$name, 'object' => $object, 'fields' => $fields_to_use, 'description_colspan' => false ));
 						}
 					});

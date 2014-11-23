@@ -81,7 +81,8 @@
 				add_action('init', function() use($class){
 					foreach (array('scripts', 'styles') as $resource) {
 						foreach ($class::$$resource as $name => $options) {
-							$default_args = array('dependencies' => array('jquery'), 'version' => false, 'in_footer' => false);
+							$default_args = array('dependencies' => array(), 'version' => false, 'in_footer' => false);
+							if($resource == 'scripts') $default_args['dependencies'][]= 'jquery';
 							if('/' == $options['source'][0]){
 								if(isset($options['from']) &&  'plugin' == $options['from']){
 									$options['source'] = $class::url($options['source']);
@@ -188,6 +189,7 @@
 		static function recursive_enqueue($type, $name, $kind='main'){
 			$function = $type == 'script' ? 'wp_enqueue_script' : 'wp_enqueue_style';	
 			$function($name); 
+
 			$pluralized = $type.'s'; $list = static::$$pluralized ;
 			if(!empty($list[$name]['dependencies'])){
 				foreach ($list[$name]['dependencies'] as $dep) {
@@ -200,50 +202,63 @@
 		static function enqueue_scripts(){
 			global $wp_query;
 			foreach(static::$includes as $resource){
-				$condition = array_keys($resource); $condition =$condition[0]; $value = $resource[$condition];
-				$valid = true; $kind = 'main';
-				switch ($condition) {
-					case 'page':
-						if(!is_page($value)) $valid = false;
-					break;
-					
-					case 'single':
-						if(!is_single()){ $valid = false; break; }
-						if('any' != $value && ! $value == $wp_query->query['post_type']) $valid = false;
-					break;
-
-					case 'archive':
-						if(!is_archive()){ $valid = false; break; }
-						if('any' != $value && ! $value == $wp_query->query['post_type']) $valid = false;
-					break;
-
-					case 'taxonomy':
-						if(!is_tax($value)) $valid = false;
-					break;
-
-					case 'is':
-						if('single' == $value && !is_single()){ $valid = false; break; }
-						if('archive' == $value && !is_archive()){ $valid = false; break; }
-						if('home' == $value && !is_home()){ $valid = false; break; }
-						if('search' == $value && !is_search()){ $valid = false; break; }
-						if('taxonomy' == $value && !is_tax()){ $valid = false; break; }
-						if('tag' == $value && !is_tag()){ $valid = false; break; }
-						if('category' == $value && !is_category()){ $valid = false; break; }
-						if('login' == $value){
-							if( strncmp($_SERVER['REQUEST_URI'], '/wp-login.php', strlen('/wp-login.php')) ){
-								$kind = 'login'; 
-							} else { $valid = false ; break; }
-						}
-					break;
-
+				$conditions = $resource; $assets = array();
+				foreach ($resource as $key => $value) {
+					if(in_array($key, array('scripts', 'styles'))){
+						$assets[$key] = $value;
+						unset($conditions[$key]);
+					}
 				}
+				
+				$valid = true; $kind = 'main';
+				foreach ($conditions as $condition => $value) {					
+					switch ($condition) {
+						case 'page':
+							if(!is_page($value)) $valid = false;
+						break;
+						
+						case 'single':
+							if(!is_single()){ $valid = false; break; }
+							if('any' != $value && ! $value == $wp_query->query['post_type']) $valid = false;
+						break;
+
+						case 'archive':
+							if(!is_archive()){ $valid = false; break; }
+							if('any' != $value && ! $value == $wp_query->query['post_type']) $valid = false;
+						break;
+
+						case 'taxonomy':
+							if(!is_tax($value)) $valid = false;
+						break;
+
+						case 'is':
+							if('any' == $value) { break; }
+							if('singular' == $value && !is_singular()){ $valid = false; break; }
+							if('single' == $value && !is_single()){ $valid = false; break; }
+							if('archive' == $value && !is_archive()){ $valid = false; break; }
+							if('home' == $value && !is_home()){ $valid = false; break; }
+							if('search' == $value && !is_search()){ $valid = false; break; }
+							if('taxonomy' == $value && !is_tax()){ $valid = false; break; }
+							if('tag' == $value && !is_tag()){ $valid = false; break; }
+							if('category' == $value && !is_category()){ $valid = false; break; }
+							if('login' == $value){
+								if( strncmp($_SERVER['REQUEST_URI'], '/wp-login.php', strlen('/wp-login.php')) ){
+									$kind = 'login'; 
+								} else { $valid = false ; break; }
+							}
+						break;
+
+						case 'if':
+							if(!static::$value()) $valid = false;
+						break;
+					}
+					if(!$valid) break;
+				}
+
 				if(!$valid) continue;
-				foreach (array('script', 'style') as $type) {
-					$list = $type.'s';
-					if(isset($resource[$list])){
-						foreach ($resource[$list] as $asset) {
-							static::recursive_enqueue($type, $asset, $kind);
-						}
+				foreach ($assets as $key => $value) {
+					foreach ($value as $asset) {
+						static::recursive_enqueue(rtrim($key, 's'), $asset, $kind);
 					}
 				}
 			}
@@ -268,13 +283,17 @@
 	function html_attributes($args){
 		$kv_pairs = "" ;
 		foreach ($args as $name => $value) {
+			if($name == 'selected'){
+				$kv_pairs .= $value ? 'selected ' : ' ';
+				continue;
+			}
 			$kv_pairs .= sprintf(" %s=\"%s\" ", $name, $value) ;
 		}
 		echo $kv_pairs ;
 	}
 
 	function description($text, $classes=''){
-		printf("<span style='display:block;' class='description $classes'>%s</span>", $text);
+		printf("<span style='display:block; font-weight:normal;' class='description $classes'>%s</span>", $text);
 	}
 
 	function label($label, $for, $classes=null){
@@ -489,5 +508,17 @@ function somatic_attach_external_image( $url = null, $post_id = null, $thumb = n
             return $code;
 
         }
+    }
+
+    function first($array){
+    	return $array[0];
+    }
+
+    function limit($arg, $limit=20, $more='...'){
+    	$size = strlen($arg);
+    	$arg = wordwrap($arg, $limit, '\n');
+    	$arg = explode('\n', $arg);
+
+    	return $size > $limit ? $arg[0].$more : $arg[0] ;
     }
  ?>

@@ -113,15 +113,9 @@
 				});
 			}
 
-			if(!empty(static::$has)){
-				foreach (static::$has as $object) {
-					static::$collumns[$object] = ucfirst($object) . 's' ;
-				}
-			}
 
 			if(!empty(static::$belongs_to)){
 				$parent_class = sibling_class(ucfirst(static::$belongs_to), get_called_class());
-				static::$collumns[static::$belongs_to] = ucfirst($parent_class::$name) ;
 				
 				if(is_admin()){
 					add_filter('pre_get_posts', function($query) use ($class){
@@ -190,13 +184,13 @@
 					$screen = get_current_screen(); 
 					if($screen->post_type == $class::$name){
 						$filter = $class::$creation_fields['hierarchical'] ? 'page_row_actions' : 'post_row_actions' ;						
-						add_filter($filter, function($actions) use ($class) {
+						add_filter($filter, function($actions) use ($class, $filter) {
 							foreach ($class::$absent_actions as $name) {
 								$name = $name == 'quick-edit' ? 'inline hide-if-no-js' : $name;
 								unset($actions[$name]); 
 							
 							}
-							return $actions ;
+							return apply_filters('atlas-'.$class::$name."-$filter", $actions) ;
 						});
 					}
 				});
@@ -209,6 +203,26 @@
 						unset($collumns[$name]); return $collumns;
 					});
 				}
+			}
+			if(isset($class::$taxonomies) && !empty($class::$taxonomies)){
+				add_action("$domainspace-".$class::$name."-save", function($post_id, $post) use($class){
+					$object = new $class($post_id);
+					foreach ($class::$taxonomies as $tax) {
+						$terms = $object->terms($tax);
+						if($terms){
+							$parents = array();
+							foreach ($terms as $term) {
+						  		if($term->parent){
+									$parent = get_term_by('id', $term->parent, $tax);
+									$parents[]= $parent->term_id ;
+						  		}
+							}
+							if(!empty($parents)){
+								wp_set_post_terms($post_id, $parents, $tax, true);
+							}
+					  	}
+					}
+			  }, 10, 2);	
 			}
 
 			if($class::$rateable){
@@ -242,12 +256,12 @@
 					$meta[$field] = $value ;
 				} else {
 					foreach (array('title', 'name', 'content', 'excerpt', 'author', 'name', 'status') as $name) {
-					 	if($field == $name){
-					 		$new_field = "post_$field" ;
-					 		$post[$new_field] = $value ;
-					 		unset($post[$field]) ;
-					 		$field = $new_field ; 
-					 	}
+						if($field == $name){
+							$new_field = "post_$field" ;
+							$post[$new_field] = $value ;
+							unset($post[$field]) ;
+							$field = $new_field ; 
+						}
 					 } 
 					$post[$field] = $value ;
 				}
@@ -275,9 +289,19 @@
 			);
 			$params = array_merge($default_params, $params);
 			
+
 			if(isset($params['only'])){
 				$params['posts_per_page'] = $params['only'];
 				unset($params['only']);
+			}
+
+			if(isset($params['not'])){
+				if(!is_array($params['not'])) $params['not'] = array($params['not']);
+				foreach ($params['not'] as $i => $item) {
+					if(!is_numeric($item)) $params['not'][$i] = $item->ID;
+				}
+				$params['post__not_in'] = $params['not'];
+				unset($params['not']);
 			}
 			
 			if(isset($params['order_by_meta'])){
@@ -288,6 +312,23 @@
 
 				unset($params['order_by_meta']);
 			}
+
+			foreach(static::$fields as $field => $options){
+				if(isset($params[$field])){
+					if(!isset($params['meta_query'])){
+						$params['meta_query'] = array();
+					} else { 
+						if(!isset($params['meta_query']['relation'])) 
+							$params['meta_query']['relation'] = 'AND' ; 
+					}
+					$params['meta_query'][]= array(
+						'key' => $field,
+						'value' => $params[$field]
+					);
+					unset($params[$field]);
+				}
+			}
+
 			foreach (static::taxonomies() as $taxonomy) {
 				if(isset($params[$taxonomy->rewrite['slug']])){
 					if(!isset($params['tax_query'])) $params['tax_query'] = array() ;
@@ -309,6 +350,10 @@
 			return static::all($params);
 		}
 
+		static function first($params=array()){
+			$result = static::all(array_merge($params), array('only' => 1));
+			return !empty($result) ? $result[0] : null ;
+		}
 
 		public function rate($value){
 			if(!static::$rateable) return false ;

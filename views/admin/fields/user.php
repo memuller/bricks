@@ -13,4 +13,3 @@
 	</option>
 <?php } ?>
 </select> 
-<?php description($options['description']) ?>

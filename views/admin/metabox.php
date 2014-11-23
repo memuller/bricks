@@ -12,7 +12,7 @@
 	<tbody>
 		<?php $i = 0; foreach ($fields as $field => $options) { 
 			require 'partials/field_handler.php'; 
-			$description_placing = ($options['type'] == 'text_area' || $options['type'] == 'geo') ? 'top' : 'bottom' ; ?>
+			$description_placing = ($options['type'] == 'text_area' || $options['type'] == 'geo' || $options['type'] == 'editor') ? 'top' : 'bottom' ; ?>
 			<?php
 				if($description_colspan){  
 					$header_style = $i == 0 ? 'padding-top: 5px; ' : '';
@@ -71,13 +71,15 @@
 						case 'media':
 							require 'fields/media.php';
 						break;
-						
+						case 'editor':
+							require 'fields/editor.php';
+						break;
 						default:
 							require 'fields/default.php';	
 						break;
 
 					} ?>
-					<?php if(!$description_colspan) description($options['description']) ; ?>
+					<?php if(!$description_colspan && $description_placing != 'top') description($options['description']) ; ?>
 				</td>
 				<?php if ($description_colspan && $description_placing != 'top'): ?>
 					</tr>

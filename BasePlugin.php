@@ -159,10 +159,9 @@
 				if( ! is_numeric($base::$db_version) || floatval($db_version) < $base::$db_version) {
 					if(! empty($base::$custom_taxonomies)) \CustomTaxonomy::build_database();
 					do_action($prefix.'_update', $base::$db_version);
-						
 					foreach (array_merge($base::$custom_classes, $base::$custom_users) as $class) {
 						$class = $namespace. $class ;
-						$class::build_database();
+						if(method_exists($class, 'build_database')) $class::build_database();
 					}
 
 					if(!empty($base::$absent_roles) || false ){
@@ -257,6 +256,13 @@
 					$name = $screen->taxonomy ;
 				} elseif (in_array(ucfirst($screen->post_type), $base::$custom_posts)) {
 					$name = $screen->post_type;
+				} elseif($screen->base == 'profile' || $screen->base == 'user-edit') {
+					global $profileuser;
+					$role = array_intersect($profileuser->roles, 
+							array_map(function($role){return strtolower($role);}, $base::$custom_users));
+					if(!empty($role)){
+						$name = $role[0];
+					}
 				}
 				if(isset($name)){
 					wp_enqueue_script( $name, $base::url( "js/admin/$name.js") );
@@ -277,6 +283,7 @@
 						}
 
 						if ('media' == $options['type']) {
+							wp_enqueue_media();
 							wp_enqueue_script('media_upload', $base::url('lib/js/utils/media_upload.js'), array('jquery'));
 						}
 

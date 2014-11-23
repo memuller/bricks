@@ -1,5 +1,5 @@
 <?php 
-	$params = array('post_type' => $options['post_type']);
+	$params = array('post_type' => $options['post_type'], 'posts_per_page' => -1);
 	if(isset($options['filter'])) $params = array_merge($params, $options['filter']);
 	$posts = get_posts($params);
 ?>

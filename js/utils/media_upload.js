@@ -1,6 +1,5 @@
 jQuery(document).ready(function ($) {
 	$('.upload.media.button').on('click', function(event){
-		console.log('=D');
 		var $this = $(this); event.preventDefault();
 		var file_frame = wp.media.frames.file_frame = wp.media({
 			multiple: false
@@ -12,6 +11,11 @@ jQuery(document).ready(function ($) {
 			
 			$field.val(attachment.url) ;
 			$this.val(attachment.filename);
+			preview = '#'+$field.attr('id')+'-preview';
+			if($(preview).is('*')){
+				$(preview).attr('src', attachment.url);
+				$(preview).show();
+			}
 		});
 		return file_frame.open();
 	});
