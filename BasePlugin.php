@@ -258,10 +258,17 @@
 					$name = $screen->post_type;
 				} elseif($screen->base == 'profile' || $screen->base == 'user-edit') {
 					global $profileuser;
-					$role = array_intersect($profileuser->roles, 
-							array_map(function($role){return strtolower($role);}, $base::$custom_users));
-					if(!empty($role)){
-						$name = $role[0];
+
+					foreach ($base::$custom_users as $user) {
+						$model = $namespace.$user;
+						if(in_array(strtolower($model::$name), $profileuser->roles) || 
+							(
+								$model::$allow_admin == true &&
+								in_array('administrator', $profileuser->roles)
+							)
+						){
+							$name = strtolower($model::$name);
+						} 
 					}
 				}
 				if(isset($name)){
