@@ -47,7 +47,7 @@
 
 
 			do_action( 'build_custom_post_formats-'.$class::$name);
-			if('post' != $class::$name){
+			if( !in_array($class::$name, array('post', 'page'))){
 				add_action('init', $class.'::create_post_type' ) ;
 			}
 			$editable_by = $class::$editable_by ; $fields = $class::$fields ;
