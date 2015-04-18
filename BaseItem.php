@@ -161,7 +161,7 @@
 					if(!maybe_unserialize($this->unfiltered_fields[$field])) return array();
 					return (array) maybe_unserialize($this->unfiltered_fields[$field]) ;
 					break;
-				case 'bool':
+				case 'boolean':
 				case 'integer':
 					return intval($this->unfiltered_fields[$field]) ;
 					break;

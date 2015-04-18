@@ -94,6 +94,13 @@
 						if(isset($options['tax'])) 
 							$options['taxonomy'] = $options['tax'] ;
 
+
+						# is
+						if(isset($options['is'])){
+							if($options['is'] == 'page' && ! is_page()){ continue ; }
+							if($options['is'] == 'single' && ! is_single()){ continue ; }
+						}
+
 						# method
 						if(isset($options['method'])){ 
 							$options['method'] = strtoupper($options['method']);
@@ -236,9 +243,9 @@
 					$object = $_POST[$_POST['post_type']]; $class = $namespace. ucfirst($_POST['post_type']);	
 				}
 
-				if(!isset($object)) return ;
+				if(!isset($object)) $object = array() ;
 				foreach ($class::$fields as $field_name => $field_options) {
-
+					if($field_options['type'] == 'boolean' && !isset($object[$field_name])){ $object[$field_name] = 0 ; }
 					if(isset($object[$field_name]) ){
 						update_post_meta($post_id, $field_name, $object[$field_name]) ;
 					} elseif ($class::$fields[$field_name]['type'] == 'boolean') {

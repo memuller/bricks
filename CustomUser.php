@@ -73,7 +73,7 @@
 		function __construct($base=false){
 			if(!$base){
 				global $current_user ; 
-				get_currentuserinfo();
+				\get_currentuserinfo();
 				$base = $current_user ; 
 			}
 			parent::__construct($base);
@@ -105,6 +105,7 @@
 						if(in_array($class::$name, $user->roles) || ($class::$allow_admin && in_array('administrator', $user->roles)) ){
 							$fields = $_POST[$class::$name] ;
 							foreach ($class::$fields as $field => $options) {
+								if($options['type'] == 'boolean' && !isset($fields[$field])){ $fields[$field] = 0 ; }
 								if(isset($fields[$field])){
 									update_usermeta( $user->ID, $field, $fields[$field] );
 								}	
