@@ -244,6 +244,7 @@
 				}
 
 				if(!isset($object)) $object = array() ;
+				if(empty($_POST)) return ;
 				foreach ($class::$fields as $field_name => $field_options) {
 					if($field_options['type'] == 'boolean' && !isset($object[$field_name])){ $object[$field_name] = 0 ; }
 					if(isset($object[$field_name]) ){
