@@ -18,6 +18,7 @@
 		static $per_page = 10;
 		static $fields = array();
 		static $icon;
+		static $skip_creation = false;
 
 		static function create_post_type(){
 			register_post_type( static::$name, static::$creation_fields ) ;
@@ -47,7 +48,7 @@
 
 
 			do_action( 'build_custom_post_formats-'.$class::$name);
-			if( !in_array($class::$name, array('post', 'page'))){
+			if( !in_array($class::$name, array('post', 'page')) && ! static::$skip_creation ){
 				add_action('init', $class.'::create_post_type' ) ;
 			}
 			$editable_by = $class::$editable_by ; $fields = $class::$fields ;
