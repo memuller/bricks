@@ -234,7 +234,7 @@
 			add_action('save_post', function($post_id) use($base, $namespace) {
 				$domain = strtolower(get_namespace($base));
 				if( defined('DOING_AUTOSAVE') && DOING_AUTOSAVE) return ;
-
+				if(!isset($_POST['post']) && !isset($_POST['post_type'])) return ;
 				if(isset($_POST['custom_single']) && in_array($_POST['custom_single'], $base::$custom_singles) ){
 					$class = $namespace.$_POST['custom_single']; $object = $_POST[$_POST['custom_single']];
 				}
@@ -244,7 +244,7 @@
 				}
 
 				if(!isset($object)) $object = array() ;
-				if(empty($_POST)) return ;
+				if(empty($_POST) || !isset($class)) return ;
 				foreach ($class::$fields as $field_name => $field_options) {
 					if($field_options['type'] == 'boolean' && !isset($object[$field_name])){ $object[$field_name] = 0 ; }
 					if(isset($object[$field_name]) ){
