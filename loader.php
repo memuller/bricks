@@ -19,16 +19,16 @@
 	if(!class_exists('Translation')) require_once __DIR__ . '/Translation.php' ;
 	
 	
-	if(isset($features['list_table']) && !class_exists('WP_List_Table')) 
+	if(in_array('list_table', $features) && !class_exists('WP_List_Table')) 
 		require_once( ABSPATH . 'wp-admin/includes/class-wp-list-table.php' );
 
-	if(isset($features['haml']) && !function_exists('display_haml')) 
+	if(in_array('haml', $features) && !function_exists('display_haml')) 
 		require_once __DIR__. '/vendors/haml/HamlParser.class.php' ;
 
-	if(isset($features['recaptcha']))
+	if(in_array('recaptcha', $features))
 		require_once __DIR__. '/vendors/recaptcha-php/recaptchalib.php';
 	
-	if(isset($features['ganon']) && !function_exists('file_get_dom')) 
+	if(in_array('ganon', $features) && !function_exists('file_get_dom')) 
 		require __DIR__ . '/vendors/ganon.php' ;
 	
 	require realpath(__DIR__. '/../base/Base.php') ;
