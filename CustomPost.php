@@ -27,8 +27,9 @@
 		static function build(){
 			$class = get_called_class(); $namespace = get_namespace($class); $domainspace = strtolower($namespace);
 			if(isset(static::$labels)) static::$creation_fields['labels'] = static::$labels ; 
-			$presenter = $namespace.'\Presenters\Base';
-			
+			$base = $namespace.'\Plugin';
+			$presenter = $base::presenter();
+
 			if(isset($class::$formats)){
 				$class::$fields['_revision_post_format'] = array('type' => 'hidden', 'required' => true, 'default' => static::$formats[0]);
 				foreach ($class::$formats as $format) {
@@ -79,10 +80,10 @@
 						unset($fields[$field]);
 					}
 				}
-				add_action('edit_form_advanced', function() use($class, $fields_to_use) {
+				add_action('edit_form_advanced', function() use($class, $fields_to_use, $presenter) {
 					$screen = get_current_screen() ; 
 					if($screen->post_type == $class::$name){
-						$object = new $class(); $presenter = get_namespace($class).'\Presenters\Base';
+						$object = new $class();
 						$presenter::render('admin/metabox', array( 'type' => $class::$name, 'object' => $object, 'fields' => $fields_to_use, 'description_colspan' => false ));
 					}
 				});
@@ -91,7 +92,7 @@
 
 			// Renders a main metabox, if needed.
 			if(sizeof($editable_by) > 0 ){
-				add_action('add_meta_boxes', function() use ($class, $fields, $editable_by) {
+				add_action('add_meta_boxes', function() use ($class, $fields, $editable_by, $presenter) {
 					foreach ($editable_by as $metabox => $options) {
 						$fields_to_use = array();
 						foreach($fields as $field => $field_options){
@@ -102,8 +103,8 @@
 						}
 						$placing = isset($options['placing']) ? $options['placing'] : 'side';
 						$name = isset($options['name']) ? $options['name'] : ucfirst($metabox) ;
-						add_meta_box($class::$name.'-'.$metabox, $name , function() use ($class, $fields_to_use, $metabox, $placing) {
-							$object = new $class(); $presenter = get_namespace($class).'\Presenters\Base'; 
+						add_meta_box($class::$name.'-'.$metabox, $name , function() use ($class, $fields_to_use, $metabox, $placing, $presenter) {
+							$object = new $class(); 
 							$domain = strtolower(get_namespace($class));
 							$table_hook = sprintf("%s-%s-%s-metabox-table", $domain, $class::$name, $metabox );
 							$presenter::render('admin/metabox', array( 'type' => $class::$name, 'object' => $object, 'fields' => $fields_to_use, 'table_hook' => $table_hook, 'placing' => $placing ));

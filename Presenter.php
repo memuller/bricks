@@ -9,11 +9,16 @@
 		static $scripts = array();
 		static $styles = array();
 		static $priority = false ;
+		static $namespace = false;
 
 		static function render_to_string($view, $scope=array()){
-			global $plugin_haml_parser ; 
-			$plugin = get_called_class(); $plugin = explode('\\', $plugin); $plugin = $plugin[0];
-			$plugin = "\\".$plugin.'\Plugin' ; $path = $plugin::path('views'.DIRECTORY_SEPARATOR);
+			global $plugin_haml_parser ;
+
+			if(!static::$namespace)
+				static::$namespace = get_namespace(get_called_class());
+
+			$plugin = static::$namespace . 'Plugin';
+			$path = $plugin::path('views'.DIRECTORY_SEPARATOR);
 			$file = get_theme_root() . DIRECTORY_SEPARATOR . get_stylesheet() . DIRECTORY_SEPARATOR . 'views'. DIRECTORY_SEPARATOR. $view . '.php' ;
 			if (! file_exists($file)){
 				$file = $path . $view . '.php' ;
@@ -58,7 +63,8 @@
 		static function styles(){}
 		static function scripts(){}
 		static function build(){
-			$class = get_called_class(); $namespace = get_namespace($class); 
+			$class = get_called_class(); 
+			$namespace = $static::$namespace ? $static::$namespace : get_namespace($class); 
 			$name = explode('\\', $class) ; $name = $name[sizeof($name)-1] ;
 			$base = $namespace . '\Plugin';
 			
