@@ -30,6 +30,9 @@
 	
 	if(in_array('ganon', $features) && !function_exists('file_get_dom')) 
 		require __DIR__ . '/vendors/ganon.php' ;
+
+	if(isset($features['pest-json']) && !class_exists('PestJSON')) 
+		require_once __DIR__. '/vendors/pest/PestJSON.php' ;
 	
 	require realpath(__DIR__. '/../base/Base.php') ;
 	$base = $namespace."\Plugin";
