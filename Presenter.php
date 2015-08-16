@@ -63,7 +63,7 @@
 		static function styles(){}
 		static function scripts(){}
 		static function build(){
-			$class = get_called_class(); 
+			$class = get_called_class();
 			$namespace = static::$namespace ? static::$namespace : get_namespace($class); 
 			$name = explode('\\', $class) ; $name = $name[sizeof($name)-1] ;
 			$base = $namespace . '\Plugin';

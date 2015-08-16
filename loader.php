@@ -31,7 +31,10 @@
 	if(in_array('ganon', $features) && !function_exists('file_get_dom')) 
 		require __DIR__ . '/vendors/ganon.php' ;
 
-	if(isset($features['pest-json']) && !class_exists('PestJSON')) 
+	if(in_array('rest_post', $features)) 
+		require_once __DIR__. '/RestPost.php' ;
+
+	if(in_array('pest-json', $features) && !class_exists('PestJSON')) 
 		require_once __DIR__. '/vendors/pest/PestJSON.php' ;
 	
 	require realpath(__DIR__. '/../base/Base.php') ;
