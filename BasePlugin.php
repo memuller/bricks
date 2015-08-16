@@ -263,6 +263,15 @@
 						update_post_meta($post_id, $field_name, 0);
 					}
 				}
+				
+				if(get_post_meta($post_id, '_notnew', true) != ''){
+					$new = false;
+				} else {
+					update_post_meta($post_id, '_notnew', true);
+					$new = true;
+				}
+				$object['_new'] = $new;
+
 				do_action(sprintf('%s-%s-save', $domain, $class::$name), $post_id, $object);
 
 			});
