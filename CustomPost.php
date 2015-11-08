@@ -20,6 +20,18 @@
 		static $icon;
 		static $skip_creation = false;
 
+
+		public function __set($attr, $value){
+			if(in_array($attr, ['title', 'name'])){
+				$attr = "post_$attr";
+				$this->base->$attr = $value;
+				wp_update_post($this->base);
+				return $value;
+			} else {
+				return parent::__set($attr, $value);
+			}
+		}
+
 		static function create_post_type(){
 			register_post_type( static::$name, static::$creation_fields ) ;
 		}
@@ -47,74 +59,76 @@
 				});
 			}
 
-
 			do_action( 'build_custom_post_formats-'.$class::$name);
 			if( !in_array($class::$name, array('post', 'page')) && ! static::$skip_creation ){
 				add_action('init', $class.'::create_post_type' ) ;
 			}
-			$editable_by = $class::$editable_by ; $fields = $class::$fields ;
-			//
-			if(isset($class::$tabs)){
-				add_action('edit_form_after_title', function() use($class, $presenter){
-					$screen = get_current_screen();
-					if($screen->post_type == $class::$name){
-						$params = array(
-							'presenter' => $presenter, 'tabs' => $class::$tabs, 
-							'type' => $class::$name, 'class' => $class, 'object' => new $class(),
-							
-						);
-						if(isset($class::$formats)){
-							$params['data'] = $class::$formats ; 
-						}
-						$presenter::render('admin/tabbed', $params);
-					}
-				});
-			}
 
-			// Renders fields on an advanced form, if needed.
-			if(in_array( 'form_advanced', array_keys(static::$editable_by) )){
-				$fields_to_use = array();
-				foreach ($class::$fields as $field => $options) {
-					if(in_array($field, $class::$editable_by['form_advanced']['fields'] )){
-						$fields_to_use = array_merge($fields_to_use, array($field => $options)  );
-						unset($fields[$field]);
-					}
-				}
-				add_action('edit_form_advanced', function() use($class, $fields_to_use, $presenter) {
-					$screen = get_current_screen() ; 
-					if($screen->post_type == $class::$name){
-						$object = new $class();
-						$presenter::render('admin/metabox', array( 'type' => $class::$name, 'object' => $object, 'fields' => $fields_to_use, 'description_colspan' => false ));
-					}
-				});
-				unset($editable_by['form_advanced']);
-			}
-
-			// Renders a main metabox, if needed.
-			if(sizeof($editable_by) > 0 ){
-				add_action('add_meta_boxes', function() use ($class, $fields, $editable_by, $presenter) {
-					foreach ($editable_by as $metabox => $options) {
-						$fields_to_use = array();
-						foreach($fields as $field => $field_options){
-							if(in_array($field, loopable($options['fields']) )){
-								$fields_to_use = array_merge($fields_to_use, array($field => $field_options));
-								unset($fields[$field]);
+			add_action('current_screen', function() use($class, $presenter, $base){
+				$editable_by = $class::$editable_by ; $fields = $class::$fields ;
+				if(isset($class::$tabs)){
+					add_action('edit_form_after_title', function() use($class, $presenter){
+						$screen = get_current_screen();
+						if($screen->post_type == $class::$name){
+							$params = array(
+								'presenter' => $presenter, 'tabs' => $class::$tabs, 
+								'type' => $class::$name, 'class' => $class, 'object' => new $class(),
+								
+							);
+							if(isset($class::$formats)){
+								$params['data'] = $class::$formats ; 
 							}
+							$presenter::render('admin/tabbed', $params);
 						}
-						$placing = isset($options['placing']) ? $options['placing'] : 'side';
-						$name = isset($options['name']) ? $options['name'] : ucfirst($metabox) ;
-						add_meta_box($class::$name.'-'.$metabox, $name , function() use ($class, $fields_to_use, $metabox, $placing, $presenter) {
-							$object = new $class(); 
-							$domain = strtolower(get_namespace($class));
-							$table_hook = sprintf("%s-%s-%s-metabox-table", $domain, $class::$name, $metabox );
-							$presenter::render('admin/metabox', array( 'type' => $class::$name, 'object' => $object, 'fields' => $fields_to_use, 'table_hook' => $table_hook, 'placing' => $placing ));
-							do_action(sprintf("%s-%s-%s-metabox", $domain, $class::$name, $metabox));
-						}, $class::$name, $placing, 'high');
+					});
+				}
+				
+				// Renders fields on an advanced form, if needed.
+				if(in_array( 'form_advanced', array_keys($class::$editable_by) )){
+					$fields_to_use = array();
+					foreach ($class::$fields as $field => $options) {
+						if(in_array($field, $class::$editable_by['form_advanced']['fields'] )){
+							$fields_to_use = array_merge($fields_to_use, array($field => $options)  );
+							unset($fields[$field]);
+						}
 					}
+					add_action('edit_form_advanced', function() use($class, $fields_to_use, $presenter) {
 
-				});
-			}
+						$screen = get_current_screen() ; 
+						if($screen->post_type == $class::$name){
+							$object = new $class();
+							$presenter::render('admin/metabox', array( 'type' => $class::$name, 'object' => $object, 'fields' => $fields_to_use, 'description_colspan' => false ));
+						}
+					});
+					unset($editable_by['form_advanced']);
+				}
 
+				// Renders a main metabox, if needed.
+				if(sizeof($editable_by) > 0 ){
+
+					add_action('add_meta_boxes', function() use ($class, $fields, $editable_by, $presenter) {
+						foreach ($editable_by as $metabox => $options) {
+							$fields_to_use = array();
+							foreach($fields as $field => $field_options){
+								if(in_array($field, loopable($options['fields']) )){
+									$fields_to_use = array_merge($fields_to_use, array($field => $field_options));
+									unset($fields[$field]);
+								}
+							}
+							$placing = isset($options['placing']) ? $options['placing'] : 'side';
+							$name = isset($options['name']) ? $options['name'] : ucfirst($metabox) ;
+							add_meta_box($class::$name.'-'.$metabox, $name , function() use ($class, $fields_to_use, $metabox, $placing, $presenter) {
+								$object = new $class(); 
+								$domain = strtolower(get_namespace($class));
+								$table_hook = sprintf("%s-%s-%s-metabox-table", $domain, $class::$name, $metabox );
+								$presenter::render('admin/metabox', array( 'type' => $class::$name, 'object' => $object, 'fields' => $fields_to_use, 'table_hook' => $table_hook, 'placing' => $placing ));
+								do_action(sprintf("%s-%s-%s-metabox", $domain, $class::$name, $metabox));
+							}, $class::$name, $placing, 'high');
+						}
+
+					});
+				}
+			});
 
 			if(!empty(static::$belongs_to)){
 				$parent_class = sibling_class(ucfirst(static::$belongs_to), get_called_class());
@@ -169,12 +183,21 @@
 							foreach ($class::$actions as $action => $options) {
 								if(isset($options['capability']) && !current_user_can($options['capability']) ) continue ;
 								if(isset($options['condition']) && !$object->$options['condition']() ) continue ;
-								$link = sprintf('edit.php?post_type=%s&id=%s&action=%s', $class::$name, $object->id, $action, $action);
+								$link = sprintf('post.php?post=%s&action=%s', $object->id, $action);
 								$actions[$action] = sprintf("<a href='%s'>%s</a>", $link, $options['label']);									
 								
 							}
 							return $actions;
 						});
+					}
+				});
+
+				add_action('current_screen', function() use ($class){
+					$screen = get_current_screen();
+					if(!$screen->post_type == $class::$name) return ;
+					if(isset($_GET['action']) && in_array($_GET['action'], array_keys($class::$actions))){
+						$object = new $class($_GET['post']);
+						$object->$_GET['action']();
 					}
 				});
 			}
