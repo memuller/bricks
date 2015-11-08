@@ -249,7 +249,7 @@
 			}
 		}
 
-		static function create($fields){
+		static function create($fields=array()){
 			global $wpdb ;
 			$class = get_called_class() ;
 			$meta = array(); $post = array('post_type' => static::$name, 'post_status' => 'publish');
@@ -343,7 +343,6 @@
 					unset($params[$taxonomy->rewrite['slug']]);
 				}
 			}
-			
 			return array_map(function($post) use($class) {
 				return new $class($post);
 			}, get_posts($params));

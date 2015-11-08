@@ -49,6 +49,8 @@
 				update_metadata(static::$meta_type, $this->base->ID, $name, $value) ;
 				$this->unfiltered_fields[$name] = $value ;
 			}
+
+			return $this->value;
 		}
 
 		function __call($function, $params){
