@@ -89,7 +89,7 @@
 						foreach ($class::$$resource as $name => $options) {
 							$default_args = array('dependencies' => array(), 'version' => false, 'in_footer' => false);
 							if($resource == 'scripts') $default_args['dependencies'][]= 'jquery';
-							if('/' == $options['source'][0]){
+							if('/' == $options['source'][0] && $options['source'][1] != '/'){
 								if(isset($options['from']) &&  'plugin' == $options['from']){
 									$options['source'] = $class::url($options['source']);
 								} else {
