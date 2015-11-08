@@ -16,6 +16,7 @@
 	if(!class_exists('CustomPostFormat')) require_once __DIR__ . '/CustomPostFormat.php' ;
 	if(!class_exists('CustomTaxonomy')) require_once __DIR__ . '/CustomTaxonomy.php' ;
 	if(!class_exists('CustomUser')) require_once __DIR__ . '/CustomUser.php' ;
+	if(!class_exists('CustomSingle')) require_once __DIR__ . '/CustomSingle.php' ;
 	if(!class_exists('Translation')) require_once __DIR__ . '/Translation.php' ;
 	
 	

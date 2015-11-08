@@ -245,12 +245,14 @@
 				$domain = strtolower(get_namespace($base));
 				if( defined('DOING_AUTOSAVE') && DOING_AUTOSAVE) return ;
 				if(!isset($_POST['post']) && !isset($_POST['post_type'])) return ;
-				if(isset($_POST['custom_single']) && in_array($_POST['custom_single'], $base::$custom_singles) ){
-					$class = $namespace.$_POST['custom_single']; $object = $_POST[$_POST['custom_single']];
-				}
+				
 				
 				if( isset($_POST['post_type']) && ( in_array(ucfirst($_POST['post_type']), $base::$custom_posts) || 'translation' == $_POST['post_type']) ){
 					$object = $_POST[$_POST['post_type']]; $class = $namespace. ucfirst($_POST['post_type']);	
+				}
+
+				if(isset($_POST['custom_single']) && in_array($_POST['custom_single'], $base::$custom_singles) ){
+					$class = $namespace.$_POST['custom_single']; $object = $_POST[$_POST['post_type']];
 				}
 
 				if(!isset($object)) $object = array() ;
