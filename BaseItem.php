@@ -37,6 +37,15 @@
 
 		function __set($name, $value){
 			if(isset(static::$fields[$name])){
+				# handles awesome array field saves.
+				if(strpos($name, '-') !== false){
+					list($array_name, $field_name) = explode('-', $name);
+					$array = get_metadata(static::$meta_type, $this->base->ID, $array_name, true);
+					if(!$array) $array = array();
+					$array[$field_name] = $value;
+					$name = $array_name; $value = $array;
+				}
+
 				update_metadata(static::$meta_type, $this->base->ID, $name, $value) ;
 				$this->unfiltered_fields[$name] = $value ;
 			}

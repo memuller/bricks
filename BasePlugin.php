@@ -255,14 +255,29 @@
 
 				if(!isset($object)) $object = array() ;
 				if(empty($_POST) || !isset($class)) return ;
+				$array_fields = array();
 				foreach ($class::$fields as $field_name => $field_options) {
-					if($field_options['type'] == 'boolean' && !isset($object[$field_name])){ $object[$field_name] = 0 ; }
+					if($field_options['type'] == 'boolean' && !isset($object[$field_name])){ $object[$field_name] = 0 ; } 
+					
 					if(isset($object[$field_name]) ){
+						
+						if(strpos($field_name, '-') !== false){
+							list($array, $field) = explode('-', $field_name);
+							if(!isset($array_fields[$array])) $array_fields[$array] = array();
+							$array_fields[$array][$field] = $object[$field_name];
+							continue;
+						}
+						
 						update_post_meta($post_id, $field_name, $object[$field_name]) ;
 					} elseif ($class::$fields[$field_name]['type'] == 'boolean') {
 						update_post_meta($post_id, $field_name, 0);
 					}
 				}
+
+				foreach($array_fields as $field_name => $values){
+					update_post_meta($post_id, $field_name, $values);
+				}
+
 				
 				if(get_post_meta($post_id, '_notnew', true) != ''){
 					$new = false;
