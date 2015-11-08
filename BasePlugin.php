@@ -339,6 +339,10 @@
 							wp_enqueue_script('media_upload', $base::url('lib/js/utils/media_upload.js'), array('jquery'));
 						}
 
+						if ('multiple' == $options['type']) {
+							wp_enqueue_script('multiple', $base::url('lib/js/utils/multiple.js'), array('jquery'));
+						}
+
 						if( 'geo' == $options['type']){
 							wp_enqueue_script('jquery-ui-autocomplete', array('jquery'));
 							wp_enqueue_script('gmaps-api', 'http://maps.google.com/maps/api/js?sensor=false&language=pt-BR', array('jquery')) ;
