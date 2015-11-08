@@ -293,6 +293,7 @@
 
 			add_action('admin_enqueue_scripts', function() use ($base, $namespace) {
 				wp_enqueue_style(__NAMESPACE__.'-admin', $base::url('css/admin/main.css') );
+				wp_enqueue_script(__NAMESPACE__.'-admin', $base::url('js/admin/main.js') );
 				$screen = get_current_screen() ;
 				if( $screen->base == 'edit-tags' && in_array(ucfirst($screen->taxonomy), $base::$custom_taxonomies )){
 					$name = $screen->taxonomy ;
