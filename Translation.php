@@ -83,10 +83,10 @@
 				global $$translations_var ; 
 				if(!isset($$translations_var)){
 					$language = WPLANG == '' ? 'en_US' : WPLANG ;
-					$$translations_var = get_posts(array('post_type' => $class::$name, 
+					$posts = get_posts(array('post_type' => $class::$name, 
 						'meta_key' => 'code', 'meta_value' => $language
 					));
-					$$translations_var = new $class($$translations_var[0]);
+					$$translations_var = new $class($posts[0]);
 				}
 				
 
