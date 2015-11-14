@@ -1,4 +1,4 @@
-<?php  global $metabox_placing ; $metabox_placing = $placing ;
+<?php  global $metabox_placing ; $metabox_placing = isset($placing) ? $placing : 'form_advanced' ;
 	foreach ($fields as $field => $options) {
 		if($options['type'] == 'hidden'){
 			require 'partials/field_handler.php' ;
@@ -18,6 +18,8 @@
 					$header_style = $i == 0 ? 'padding-top: 5px; ' : '';
 					$header_style .= $description_placing != 'top' ? 'border-bottom: 0px; padding-bottom: 5px;' : '' ;
 				}
+				if(!isset($header_style)) 
+					$header_style = '';
 			?>
 			<tr>
 				<th <?php echo "style='$header_style'" ?>>

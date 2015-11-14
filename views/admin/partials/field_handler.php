@@ -1,5 +1,5 @@
 <?php 
-	if($options['hidden'] == true) continue;
+	if(isset($options['hidden']) && $options['hidden'] == true) continue;
 	$id = $type.'_'.$field; $name =  $type.'['.$field.']' ; $html = ''; $validations = '' ;
 	if(!isset($options['size'])){
 		$size = $options['type'] == 'integer' ? 5 : 20;
