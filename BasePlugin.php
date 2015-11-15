@@ -322,6 +322,7 @@
 					$class = $namespace.ucfirst($name);
 					
 					foreach ($class::$fields as $field => $options) {
+						if(!isset($options['type'])) continue;
 						if( 'date' == $options['type'] ){
 							wp_enqueue_script('jquery-datepick', $base::url('lib/js/jquery-datepick/jquery.datepick.js'), array('jquery'));
 							if(WPLANG == 'pt_BR')
