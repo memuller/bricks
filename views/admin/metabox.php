@@ -58,6 +58,10 @@
 							require 'fields/term_taxonomy.php';
 						break;
 
+						case 'key_value':
+							require 'fields/key_value.php';
+						break;
+
 						case 'array':
 							require 'fields/array.php';
 						break;

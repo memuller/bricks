@@ -2,6 +2,7 @@
 	
 	class RestPost extends CustomPost {
 		static $uid_is = 'ID';
+		static $endpoint;
 
 		public function __get($field){
 			if(isset(static::$fields[$field]) && isset(static::$fields[$field]['is'])){
@@ -49,6 +50,10 @@
 			}
 		}
 
+		static function endpoint(){
+			return static::$endpoint;
+		}
+
 		public function resource_url(){
 			return get_post_meta($this->ID, '_resource_url', true);
 		}
@@ -65,15 +70,40 @@
 			}
 		}
 
-		public function fetch(){
-			$response = static::make_request('get', $this->resource_url());
-			foreach ($response as $field => $value) {
+		static function map_to_local($data){
+			$actual_data = [];
+			$local_fields = static::$fields;
+			foreach($local_fields as $field => $options){
+				if(strpos($field, '-') !== false){
+					$broken_field = explode('-', $field);
+					if(isset($data[$broken_field[0]])){
+						$array = &$data[$broken_field[0]];
+						if(isset($array[$broken_field[1]])){
+							$data[$field] = $array[$broken_field[1]];
+							unset($array[$broken_field[1]]);
+						}
+					}
+				}
+			}
+
+			foreach ($data as $field => $value) {
 				if(!isset(static::$fields[$field])) continue;
 				if(isset(static::$fields[$field]['is'])){
 					if(static::$fields[$field]['is'] == 'ID') continue;
 					$field = static::$fields[$field]['is'];
 				}
 
+				unset($local_fields[$field]);
+
+				$actual_data[$field] = $value; 
+			}
+			return $actual_data;
+		} 
+
+		public function fetch(){
+			$response = static::make_request('get', $this->resource_url(), static::headers());
+			$data = static::map_to_local($response);
+			foreach ($data as $field => $value) {
 				$this->$field = $value; 
 			}
 		}
@@ -98,27 +128,37 @@
 			$response = static::make_request('get', $url);
 			$uid_field = static::$uid_is;
 			$uid = $response[$uid_field];
-			
-			if(static::local_uid_field() == 'ID'){
-				$post = get_post($uid);
-			} else {
-				$posts = get_posts([
-					'post_status'	=> 'publish',
-					'post_type'		=> static::$name,
-					'meta_key'		=> $uid_field,
-					'meta_value'	=> $uid
-				]);
-				$post = empty($posts) ? null : $posts[0];
-			}
+			$resource_url = static::endpoint().'/'.$uid;
+
+
+			$posts = get_posts([
+				'post_status' => 'publish',
+				'post_type' => static::$name,
+				'meta_key' => '_resource_url',
+				'meta_value' => $resource_url
+			]);
+
+			$post = empty($posts) ? null : $posts[0];
 
 			if(!$post){
 				$post = static::create([]);
-				update_post_meta($post->ID, '_resource_url', static::endpoint().'/'.$uid);	
+				update_post_meta($post->ID, '_resource_url', $resource_url);	
 			}
 			$post = new static($post->ID);
 			$post->fetch();
+		}
 
-			
+		public function destroy(){
+
+		}
+
+		public function push(){
+			if($this->_resource_url){
+				static::make_request('put', '/'.$this->uid(), $this->json_values());
+			} else {
+				static::make_request('post', '/', $this->json_values());
+				update_post_meta($this->ID, '_resource_url', static::endpoint().'/'.$this->uid());
+			}
 		}
 
 		public function action($method, $action, $params=[]){
@@ -132,14 +172,24 @@
 				strtolower($namespace), $class::$name), 
 			function($id, $data) use($class) {
 				$object = new $class($id);
-				if($data['_new']){
-					$class::make_request('post', '/', $object->json_values());
-					update_post_meta($id, '_resource_url', $class::endpoint().'/'.$object->uid());
-				} else {
-					$class::make_request('put', '/'.$object->uid(), $object->json_values());
-				}
+				$object->push();
 			}, 10, 2);
 
+			add_action('before_delete_post', function($id){
+				$post = new static($id);
+				$post->destroy();
+			});
+		}
+
+		static function by_uid($uid){
+			if(static::$uid_is == 'ID'){
+				$post = get_post($uid);
+			} else {
+				$posts = static::all([$uid_is => $uid]);
+				$post = empty($posts) ? null : $posts[0];
+			}
+
+			return new static($post->ID);
 		}
 	}
 
