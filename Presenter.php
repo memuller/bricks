@@ -1,5 +1,5 @@
-<?php 
-	
+<?php
+
 	class Presenter {
 
 		static $uses = array();
@@ -26,7 +26,7 @@
 					$file = $plugin::path('lib'.DIRECTORY_SEPARATOR.'views'.DIRECTORY_SEPARATOR).$view.'.php' ;
 				}
 			}
-			
+
 			if (file_exists($file)){
 				$scope['presenter'] = get_called_class();
 				extract($scope) ;
@@ -38,9 +38,9 @@
 			}
 
 			if( ! isset($plugin_haml_parser)) $plugin_haml_parser = new HamlParser($path, $path);
-			
+
 			if ( ! empty($scope)) $plugin_haml_parser->append($scope);
-			
+
 			return $plugin_haml_parser->fetch($view . '.haml') ;
 		}
 
@@ -64,10 +64,10 @@
 		static function scripts(){}
 		static function build(){
 			$class = get_called_class();
-			$namespace = static::$namespace ? static::$namespace : get_namespace($class); 
+			$namespace = static::$namespace ? static::$namespace : get_namespace($class);
 			$name = explode('\\', $class) ; $name = $name[sizeof($name)-1] ;
 			$base = $namespace . '\Plugin';
-			
+
 			# Loads scripts.
 			foreach ($class::$uses as $resource) {
 				if(strstr($resource, 'admin')){
@@ -98,13 +98,13 @@
 							}
 							$options = array_merge($default_args, $options);
 							$args = array(
-								$name, $options['source'], 
-								isset($options['dependencies']) ? $options['dependencies'] : array(), 
-								isset($options['version']) ? $options['version'] : false , 
+								$name, $options['source'],
+								isset($options['dependencies']) ? $options['dependencies'] : array(),
+								isset($options['version']) ? $options['version'] : false ,
 								isset($options['in_footer']) ? $options['in_footer'] : false
 							);
 							$function = 'scripts' == $resource ? 'wp_register_script' : 'wp_register_style' ;
-							
+
 							call_user_func_array($function, $args);
 
 							if('scripts' == $resource && isset($options['localize'])){
@@ -113,7 +113,7 @@
 									if(is_array($options['localize'][1])){
 										$localization = $options['localize'][1] ;
 									} else {
-										$localization_function = $options['localize'][1];	
+										$localization_function = $options['localize'][1];
 									}
 								} else {
 									$localization_function = strtolower($object);
@@ -122,7 +122,7 @@
 									$localization = $class::$localization_function();
 								wp_localize_script( $name, $object, $localization );
 							}
-						}				
+						}
 					}
 				});
 			}
@@ -134,13 +134,13 @@
 				} else {
 					add_action('login_enqueue_scripts', function() use($class){
 						$class::enqueue_scripts();
-					});						
-					add_action('wp_enqueue_scripts', function() use($class) {		
+					});
+					add_action('wp_enqueue_scripts', function() use($class) {
 						$class::enqueue_scripts();
 					});
-									
+
 				}
-				
+
 			}
 			# Loads ajax actions.
 			$prefix =  strtolower($namespace).'-'.strtolower($name).'-';
@@ -151,7 +151,7 @@
 					break;
 					case 'logged':
 						$triggers = array('wp_ajax_') ;
-					break;				
+					break;
 					default:
 						$triggers = array('wp_ajax_nopriv_') ;
 					break;
@@ -164,24 +164,33 @@
 			# Loads actions.
 			if(!empty($class::$actions)){
 				if($class::$priority){
-					$base::$actions = array_merge(array($name => $class::$actions), $base::$actions);	
+					$base::$actions = array_merge(array($name => $class::$actions), $base::$actions);
 				} else {
 					$base::$actions = array_merge($base::$actions, array($name => $class::$actions));
 				}
-				
-					
+
+
 			}
 
-			
+
+		}
+
+		static function get_namespace(){
+			$class = get_called_class();
+			return isset($class::$namespace)? $class::$namespace : get_namespace($class);
+		}
+
+		static function base(){
+			return static::get_namespace(). 'Plugin';
 		}
 
 		static function url($arg){
-			$class = get_called_class(); $base = get_namespace($class) . '\Plugin';
+			$base = static::base();
 			return $base::url($arg);
 		}
 
 		static function path($arg){
-			$class = get_called_class(); $base = get_namespace($class) . '\Plugin';
+			$base = static::base();
 			return $base::path($arg);
 		}
 
@@ -193,16 +202,16 @@
 		}
 
 		static function recursive_enqueue($type, $name, $kind='main'){
-			$function = $type == 'script' ? 'wp_enqueue_script' : 'wp_enqueue_style';	
-			$function($name); 
+			$function = $type == 'script' ? 'wp_enqueue_script' : 'wp_enqueue_style';
+			$function($name);
 
 			$pluralized = $type.'s'; $list = static::$$pluralized ;
 			if(!empty($list[$name]['dependencies'])){
 				foreach ($list[$name]['dependencies'] as $dep) {
 					if(!wp_script_is($dep,'queue')) static::recursive_enqueue($type, $dep, $kind);
 				}
-			}	
-			
+			}
+
 		}
 
 		static function enqueue_scripts(){
@@ -215,14 +224,14 @@
 						unset($conditions[$key]);
 					}
 				}
-				
+
 				$valid = true; $kind = 'main';
-				foreach ($conditions as $condition => $value) {					
+				foreach ($conditions as $condition => $value) {
 					switch ($condition) {
 						case 'page':
 							if(!is_page($value)) $valid = false;
 						break;
-						
+
 						case 'single':
 							if(!is_single()){ $valid = false; break; }
 							if('any' != $value && ! $value == $wp_query->query['post_type']) $valid = false;
@@ -249,7 +258,7 @@
 							if('category' == $value && !is_category()){ $valid = false; break; }
 							if('login' == $value){
 								if( strncmp($_SERVER['REQUEST_URI'], '/wp-login.php', strlen('/wp-login.php')) ){
-									$kind = 'login'; 
+									$kind = 'login';
 								} else { $valid = false ; break; }
 							}
 						break;
@@ -307,16 +316,16 @@
 	}
 
 	function hidden_field($name, $value){
-		printf("<input id='%s' type='hidden' name='%s' value='%s' >", $name, $name, $value);	
+		printf("<input id='%s' type='hidden' name='%s' value='%s' >", $name, $name, $value);
 	}
 
 	function flash($arg){
-		global $flash; 
-		$flash = $arg ; 
+		global $flash;
+		$flash = $arg ;
 	}
 
 	function display_flash_messages($arg=null){
-		global $flash ; 
+		global $flash ;
 		if($arg) $flash = $arg;
 		if(isset($flash)){
 			if(!is_array($flash)) $flash = array('type' => 'info', 'text' => $flash); ?>
@@ -326,10 +335,10 @@
 		<?php }
 	}
 
-	
+
 	function property_or_key($object, $arg){
 		return is_array($object) ? $object[$arg] : $object->$arg ;
-			
+
 	}
 
 	function get_namespace($class){
@@ -339,22 +348,22 @@
 
 	function sibling_class($class, $sibling){
 		$namespace = get_namespace($sibling);
-		return $namespace.'\\'.$class ; 
+		return $namespace.'\\'.$class ;
 	}
 
-	function debug($arg, $name=''){ 
+	function debug($arg, $name=''){
 		if(function_exists('dbgx_trace_var')){
 			if('' == $name) $name = false ;
 			dbgx_trace_var($arg, $name);
 		}
-		
+
 		if(! is_string($arg))
 			$arg = print_r($arg, true);
-		
+
 		if(strlen($arg) < 100 && strpos(`uname`, 'Darwin') !== false){
 			exec("terminal-notifier -title 'PHP Debug: $name' -message '$arg' ");
 		} else {
-			trigger_error($name.':'.$arg, E_USER_WARNING);		
+			trigger_error($name.':'.$arg, E_USER_WARNING);
 		}
 	}
 
@@ -442,15 +451,15 @@ function somatic_attach_external_image( $url = null, $post_id = null, $thumb = n
     return $att_id;
 }
 
-	function GCD($a, $b) {  
-		while ($b != 0){ 
-			$remainder = $a % $b;  
-			$a = $b;  
-			$b = $remainder;  
-    	}  
-		return abs ($a);  
+	function GCD($a, $b) {
+		while ($b != 0){
+			$remainder = $a % $b;
+			$a = $b;
+			$b = $remainder;
+    	}
+		return abs ($a);
     }
-    
+
     if (!function_exists('http_response_code')) {
         function http_response_code($code = NULL) {
 
