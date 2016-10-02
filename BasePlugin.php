@@ -25,6 +25,8 @@
 		static $migrations = array();
 
 		static $has_translations = false;  
+		static $scripts_version = false;
+		static $styles_version = false;
 
 		static function path($path){
 			return plugin_dir_path(dirname(__FILE__)). $path;
