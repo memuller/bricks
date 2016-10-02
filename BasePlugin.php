@@ -4,8 +4,8 @@
 
 		static $db_version = 0 ;
 		static $presenters = array();
-        static $custom_posts = array();
-        static $custom_post_formats = array();
+    static $custom_posts = array();
+    static $custom_post_formats = array();
 		static $custom_users = array();
 		static $custom_classes = array();
 		static $custom_singles = array();
@@ -64,6 +64,8 @@
 			}
 			require_once 'DefaultPresenter.php';
 			\DefaultPresenter::$namespace = $namespace;
+			\DefaultPresenter::build();
+
 
 			add_filter('option_permalink_structure', function($structure){
 				return $structure = '/%postname%/' ;
