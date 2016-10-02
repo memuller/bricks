@@ -7,27 +7,30 @@
 module.exports = (gulp, $, Bricks) => {
     const crypto = require('crypto'),
           fs     = require('fs')
-    
+
     const md5 = (filepath) => {
       let hash = crypto.createHash('md5')
       hash.update(fs.readFileSync(filepath))
       return hash.digest('hex')
     }
 
-    let base = Bricks.path('presenter/Base.php')
-    let hashCss = md5(Bricks.path('css/main.min.css')),
-        hashJs  = md5(Bricks.path('css/main.min.js'))
+    let base = Bricks.path('base/Base.php')
+    let hashCss = md5(Bricks.path('assets/dist/bundle.css')),
+        hashJs  = md5(Bricks.path('assets/dist/bundle.js'))
 
-    let regexCss = /static \$style_version\s*=\s*([^;]*)/,
-        regexJs  = /static \$script_version\s*=\s*([^;]*)/
+    let regexCss = /static \$styles_version\s*=\s*([^;]*)/,
+        regexJs  = /static \$scripts_version\s*=\s*([^;]*)/
 
+    console.log(hashCss)
+    console.log(hashJs)
     fs.readFile(base, (err, data) => {
+      if(err) throw err
       data = data
-        .replace(regexCss, "static $style_version = '"+ hashCss +"'")
-        .replace(regexJs, "static $script_version = '"+ hashJs +"'")
+        .toString()
+        .replace(regexCss, "static $styles_version = '"+ hashCss +"'")
+        .replace(regexJs, "static $scripts_version = '"+ hashJs +"'")
       fs.writeFile(base, data, (err) => {
         if(err) throw err
-        console.log('=D')
       })
     })
 
