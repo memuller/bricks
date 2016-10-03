@@ -24,7 +24,8 @@
 		static $absent_roles = array();
 		static $migrations = array();
 
-		static $has_translations = false;  
+		static $has_translations = false;
+
 		static $scripts_version = false;
 		static $styles_version = false;
 
@@ -40,7 +41,7 @@
 			$namespace = get_namespace(get_called_class());
 			$class = $namespace.'\Presenters\Base';
 			if(!class_exists($class))
-				$class = '\DefaultPresenter';  
+				$class = '\DefaultPresenter';
 			return $class ;
 		}
 
@@ -75,7 +76,7 @@
 
 			add_filter('query_vars', function($vars) use($base){
 				foreach ($base::$query_vars as $var => $regex) {
-					$vars[]=$var;		
+					$vars[]=$var;
 				}
 				return $vars;
 			});
@@ -85,7 +86,7 @@
 
 				foreach ($base::$role_requirements as $role => $urls) {
 					global $wp_query ;
-					$request = $_SERVER['REQUEST_URI']; 
+					$request = $_SERVER['REQUEST_URI'];
 					if($request[ strlen($request)-1] == '/') $request = substr($request, 0, -1);
 					foreach ($urls as $url) {
 						if($url[0] != '/') $url = '/'. $url;
@@ -95,17 +96,17 @@
 								$user_class = $namespace. ucfirst($role);
 								$user_class::auth();
 							}
-						}	
+						}
 					}
-					
+
 				}
 
 				foreach($base::$actions as $class => $actions){
 					$class =  strpos($class, 'Presenters') === false ? $namespace.'Presenters\\'.$class : $class ;
 					foreach ($actions as $action => $options) {
-						if(isset($options['page'])) 
+						if(isset($options['page']))
 							$options['pagename'] = $options['page'];
-						if(isset($options['tax'])) 
+						if(isset($options['tax']))
 							$options['taxonomy'] = $options['tax'] ;
 
 
@@ -116,43 +117,43 @@
 						}
 
 						# method
-						if(isset($options['method'])){ 
+						if(isset($options['method'])){
 							$options['method'] = strtoupper($options['method']);
 							if($options['method'] != strtoupper($_SERVER['REQUEST_METHOD']))
-								continue; 
+								continue;
 						}
 						# pagename
 						if(isset($options['pagename'])){
-							if(!isset($wp_query->query['pagename'])) continue; 
-							if($options['pagename'] != $wp_query->query['pagename']) 
+							if(!isset($wp_query->query['pagename'])) continue;
+							if($options['pagename'] != $wp_query->query['pagename'])
 								continue;
 						}
 						# single
 						if(isset($options['single'])){
-							if(!isset($wp_query->query['post_type'])) continue;  
+							if(!isset($wp_query->query['post_type'])) continue;
 							if(!is_single() && $options['single'] != $wp_query->query['post_type'])
-								continue; 
+								continue;
 						}
 						# archive
 						if(isset($options['archive'])){
-							if(!isset($wp_query->query['post_type'])) continue; 
+							if(!isset($wp_query->query['post_type'])) continue;
 							if(!is_archive() || $options['archive'] != $wp_query->query['post_type'])
-								continue; 
+								continue;
 						}
-						
+
 						$class::$action();
 					}
 				}
-				
+
 			});
 
 			add_action('plugins_loaded', function() use($base, $namespace, $prefix) {
-				
+
 				$db_version = get_option( $prefix.'_db_version', '0');
 
 				add_filter('init', function() use($base){
 					foreach ($base::$query_vars as $var => $regex) {
-						add_rewrite_tag("%$var%", $regex, "$var=" );		
+						add_rewrite_tag("%$var%", $regex, "$var=" );
 					}
 					foreach($base::$permastructs as $name => $rule){
 						add_permastruct( $name, $rule );
@@ -170,7 +171,7 @@
 								}
 								$migrated_versions[]= $version ;
 								update_option($prefix.'_migrated_versions', $migrated_versions);
-							}	
+							}
 						}
 					});
 				}
@@ -194,28 +195,28 @@
 
 
 					add_action('wp_loaded', function() use ($base, $prefix) {
-						if(has_action( "$prefix-rewrite_rules")) 
+						if(has_action( "$prefix-rewrite_rules"))
 							do_action("$prefix-rewrite_rules");
 
-						global $wp_rewrite ; $wp_rewrite->flush_rules();						
+						global $wp_rewrite ; $wp_rewrite->flush_rules();
 					});
 
-					if(is_numeric($base::$db_version)) 
+					if(is_numeric($base::$db_version))
 						update_option($prefix.'_db_version', $base::$db_version);
 				}
 			} );
-			
+
 
 			add_filter('rewrite_rules_array', function($rules) use($base, $prefix){
 				foreach ($base::$rewrite_rules as $rule => $route) {
 					$matches = 1 ;
-					if($rule[sizeof($rule)-1] != '$' && $rule[sizeof($rule)-1] != '?') 
+					if($rule[sizeof($rule)-1] != '$' && $rule[sizeof($rule)-1] != '?')
 						$rule = $rule.'?$' ;
 					if(empty($route) || (strpos($route, 'index.php?') === false && strpos($route, '/') === false ))
 						$route = 'index.php?'. $route ;
 					$base::$query_vars['paged'] = 'page/([0-9]+)' ;
 					foreach ($base::$query_vars as $var => $regex) {
-						if(strpos($rule, "%$var%") !== false){ 
+						if(strpos($rule, "%$var%") !== false){
 							$rule = str_replace("%$var%", $regex, $rule);
 							if($route[strlen($route)-1] != '?')
 								$route .= '&';
@@ -225,7 +226,7 @@
 					}
 					$rules = array_merge(array($rule => $route), $rules);
 				}
-				return $rules ; 
+				return $rules ;
 			});
 
 			if(!empty(static::$restricted_menus)){
@@ -249,10 +250,10 @@
 				$domain = strtolower(get_namespace($base));
 				if( defined('DOING_AUTOSAVE') && DOING_AUTOSAVE) return ;
 				if(!isset($_POST['post']) && !isset($_POST['post_type'])) return ;
-				
-				
+
+
 				if( isset($_POST['post_type']) && ( in_array(ucfirst($_POST['post_type']), $base::$custom_posts) || 'translation' == $_POST['post_type']) ){
-					$object = $_POST[$_POST['post_type']]; $class = $namespace. ucfirst($_POST['post_type']);	
+					$object = $_POST[$_POST['post_type']]; $class = $namespace. ucfirst($_POST['post_type']);
 				}
 
 				if(isset($_POST['custom_single']) && in_array($_POST['custom_single'], $base::$custom_singles) ){
@@ -263,17 +264,17 @@
 				if(empty($_POST) || !isset($class)) return ;
 				$array_fields = array();
 				foreach ($class::$fields as $field_name => $field_options) {
-					if($field_options['type'] == 'boolean' && !isset($object[$field_name])){ $object[$field_name] = 0 ; } 
-					
+					if($field_options['type'] == 'boolean' && !isset($object[$field_name])){ $object[$field_name] = 0 ; }
+
 					if(isset($object[$field_name]) ){
-						
+
 						if(strpos($field_name, '-') !== false){
 							list($array, $field) = explode('-', $field_name);
 							if(!isset($array_fields[$array])) $array_fields[$array] = array();
 							$array_fields[$array][$field] = $object[$field_name];
 							continue;
 						}
-						
+
 						update_post_meta($post_id, $field_name, $object[$field_name]) ;
 					} elseif ($class::$fields[$field_name]['type'] == 'boolean') {
 						update_post_meta($post_id, $field_name, 0);
@@ -284,7 +285,7 @@
 					update_post_meta($post_id, $field_name, $values);
 				}
 
-				
+
 				if(get_post_meta($post_id, '_notnew', true) != ''){
 					$new = false;
 				} else {
@@ -310,21 +311,21 @@
 
 					foreach ($base::$custom_users as $user) {
 						$model = $namespace.$user;
-						if(in_array(strtolower($model::$name), $profileuser->roles) || 
+						if(in_array(strtolower($model::$name), $profileuser->roles) ||
 							(
 								$model::$allow_admin == true &&
 								in_array('administrator', $profileuser->roles)
 							)
 						){
 							$name = strtolower($model::$name);
-						} 
+						}
 					}
 				}
 				if(isset($name)){
 					wp_enqueue_script( $name, $base::url( "js/admin/$name.js") );
 					wp_enqueue_style( $name, $base::url( "css/admin/$name.css") );
 					$class = $namespace.ucfirst($name);
-					
+
 					foreach ($class::$fields as $field => $options) {
 						if(!isset($options['type'])) continue;
 						if( 'date' == $options['type'] ){
@@ -334,7 +335,7 @@
 							wp_enqueue_style('jquery-datepick', $base::url('lib/js/jquery-datepick/smoothness.datepick.css'));
 							wp_enqueue_script('datepicker', $base::url('lib/js/utils/datepicker.js'), array('jquery-datepick-br'));
 						}
-						
+
 						if ('file' == $options['type']) {
 							wp_enqueue_script('file_upload', $base::url('lib/js/utils/file_upload.js'), array('jquery'));
 						}
@@ -375,7 +376,7 @@
 				}
 
 			});
-			
+
 			add_action('admin_print_scripts', function(){
 				$screen = get_current_screen();
 				if($screen->base = 'media-upload' && isset($_GET['force_insert']) && $_GET['force_insert'] == 'true' ){ ?>
@@ -389,7 +390,7 @@
 
 			add_action('get_media_item_args', function($args){
 				if ( isset( $_GET['force_insert'] ) && 'true' == $_GET['force_insert'] ){
-					$args['send'] = true; $args['delete'] = false; $args['toggle']= false; 
+					$args['send'] = true; $args['delete'] = false; $args['toggle']= false;
 					if ( isset( $_POST['attachment_id'] ) && '' != $_POST["attachment_id"] )
 						$args['send'] = true;
 					?>
@@ -413,7 +414,7 @@
 							}
 						});
 					</script>
-				<?php } return $args ; 
+				<?php } return $args ;
 			});
 
 			if(!empty(static::$roles)){
