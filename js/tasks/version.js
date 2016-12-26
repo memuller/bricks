@@ -21,8 +21,6 @@ module.exports = (gulp, $, Bricks) => {
     let regexCss = /static \$styles_version\s*=\s*([^;]*)/,
         regexJs  = /static \$scripts_version\s*=\s*([^;]*)/
 
-    console.log(hashCss)
-    console.log(hashJs)
     fs.readFile(base, (err, data) => {
       if(err) throw err
       data = data
