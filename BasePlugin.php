@@ -299,8 +299,8 @@
 			});
 
 			add_action('admin_enqueue_scripts', function() use ($base, $namespace) {
-				wp_enqueue_style(__NAMESPACE__.'-admin', $base::url('css/admin/main.css') );
-				wp_enqueue_script(__NAMESPACE__.'-admin', $base::url('js/admin/main.js') );
+				wp_enqueue_style(__NAMESPACE__.'-admin', $base::url('assets/admin/css/main.css') );
+				wp_enqueue_script(__NAMESPACE__.'-admin', $base::url('assets/admin/js/main.js') );
 				$screen = get_current_screen() ;
 				if( $screen->base == 'edit-tags' && in_array(ucfirst($screen->taxonomy), $base::$custom_taxonomies )){
 					$name = $screen->taxonomy ;
@@ -322,8 +322,8 @@
 					}
 				}
 				if(isset($name)){
-					wp_enqueue_script( $name, $base::url( "js/admin/$name.js") );
-					wp_enqueue_style( $name, $base::url( "css/admin/$name.css") );
+					wp_enqueue_script( $name, $base::url( "assets/admin/js/$name.js") );
+					wp_enqueue_style( $name, $base::url( "assets/admin/css/$name.css") );
 					$class = $namespace.ucfirst($name);
 
 					foreach ($class::$fields as $field => $options) {
