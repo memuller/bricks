@@ -60,7 +60,7 @@
 				$class::build();
 			}
 
-			foreach (array_merge(static::$presenters, array('Base')) as $presenter) {
+			foreach (static::$presenters as $presenter) {
 				require(static::path('presenters/'.$presenter.'.php'));
 				$class = $namespace.'Presenters\\'.ucfirst($presenter);
 				$class::build();
