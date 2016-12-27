@@ -6,6 +6,7 @@
 		static function build(){
 			$plugin = static::$namespace . 'Plugin';
 			$class = get_called_class();
+			if(is_admin()) return ;
 			foreach (['scripts', 'styles'] as $resource) {
 				$version_var = "${resource}_version";
 				$extension = $resource == 'scripts' ? 'js' : 'css';
