@@ -37,9 +37,26 @@ gulp.task('sass', function(){
 		.pipe(gulp.dest('./assets/dist/'))
 })
 
+gulp.task('sass-admin', function(){
+	return gulp.src('./assets/admin/scss/main.scss')
+		.pipe(sass().on('error', gutil.log))
+		.pipe(concat('admin.css'))
+    .pipe(cssnano().on('error', gutil.log))
+		.pipe(gulp.dest('./assets/dist/'))
+})
+
 const bundler = watchify(
   browserify({
     entries: ['./assets/js/index.js']
+  })
+  .transform(babelify, {
+    presets: ['es2015']
+  })
+)
+
+const adminBundler = watchify(
+  browserify({
+    entries: ['./assets/admin/js/index.js']
   })
   .transform(babelify, {
     presets: ['es2015']
@@ -57,12 +74,28 @@ const rebundle = () => {
     .pipe(gulp.dest('./assets/dist'))
 }
 
+const adminRebundle = () => {
+  return adminBundler.bundle()
+    .on('error', gutil.log.bind(gutil, 'Browserify Error'))
+    .pipe(source('admin.js'))
+    .pipe(buffer())
+    .pipe(uglify())
+    .pipe(sourcemaps.init({loadMaps: true}))
+    .pipe(sourcemaps.write('./'))
+    .pipe(gulp.dest('./assets/dist'))
+}
+
 bundler.on('update', rebundle)
 bundler.on('log', gutil.log)
+
+adminBundler.on('update', adminRebundle)
+adminBundler.on('log', gutil.log)
 
 gulp.task('js', () => rebundle().pipe(exit()) )
 
 gulp.task('watch', () => {
   gulp.watch('./assets/scss/*.scss', ['sass'])
+  gulp.watch('./assets/admin/scss/*.scss', ['sass-admin'])
   rebundle()
+  adminRebundle()
 })
