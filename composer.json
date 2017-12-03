@@ -1,0 +1,16 @@
+{
+	"name": "quantico/quantico",
+	"type": "project",
+
+	"require": {
+		"php": ">=7",
+		"humanmade/custom-meta-boxes": ">=1"
+	},
+
+	"repositories": [
+		{
+			"url": "https://github.com/humanmade/Custom-Meta-Boxes.git",
+			"type": "git"
+		}
+	]
+}
