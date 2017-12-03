@@ -19,7 +19,7 @@
 			"Bricks": "src/"
 		}
 	},
-
+	"minimum-stability": "dev",
 	"repositories": [
 		{
 			"url": "https://github.com/humanmade/Custom-Meta-Boxes.git",
