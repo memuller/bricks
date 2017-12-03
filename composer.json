@@ -1,10 +1,23 @@
 {
-	"name": "quantico/quantico",
+	"name": "memuller/bricks",
 	"type": "project",
+	"description": "A delightful plugin framework for building complex Wordpress sites.",
+	"authors": [
+		{
+			"name": "Matheus E. Muller",
+			"email": "hello@memuller.com"
+		}
+	],
 
 	"require": {
 		"php": ">=7",
-		"humanmade/custom-meta-boxes": ">=1"
+		"humanmade/custom-meta-boxes": "dev-develop"
+	},
+
+	"autoload": {
+		"psr-0": {
+			"Bricks": "src/"
+		}
 	},
 
 	"repositories": [
@@ -12,5 +25,10 @@
 			"url": "https://github.com/humanmade/Custom-Meta-Boxes.git",
 			"type": "git"
 		}
-	]
+	],
+	"extra": {
+		"installer-paths": {
+			"vendor/{$vendor}.{$name}": [ "type:wordpress-plugin" ]
+		}
+	}
 }
