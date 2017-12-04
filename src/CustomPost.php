@@ -22,18 +22,18 @@ class CustomPost {
 
     $names = explode('\\', $klass); $name = $names[sizeof($names)-1];
     # post_type name is class name to lowercase if not set
-    if(!isset($klass::$name)){
-      $klass::$name = strtolower($name);
+    if(!isset(static::$name)){
+      static::$name = strtolower($name);
     }
     # label is the class name +'s' if not set 
-    if(!isset($klass::$label) && !isset($klass::$labels)){
-      $klass::$label = $name.'s';
+    if(!isset(static::$label) && !isset(static::$labels)){
+      static::$label = $name.'s';
     }
     
     # sets post registration parameters
     foreach(['label', 'labels', 'public', 'supports', 'taxonomies', 'description', 'show_ui', 'menu_position', 'menu_icon', 'hierarchical', 'capability_type'] as $arg){
-      if(isset($klass::$$arg)){
-        $klass::$creation_parameters[$arg] = $klass::$$arg;
+      if(isset(static::$$arg)){
+        static::$creation_parameters[$arg] = static::$$arg;
       }
     }
   }
@@ -48,16 +48,16 @@ class CustomPost {
 
   static function create_metaboxes(){
     $klass = get_called_class();
-    foreach($klass::$boxes as $bid => $box){
+    foreach(static::$boxes as $bid => $box){
       # sets up box parameters
       $field_names = $box['fields'];
       $box_parameters = array_diff_key($box, ['fields']);
       $box_parameters['id'] = $bid;
-      $box_parameters['pages'] = [$klass::$name];
+      $box_parameters['pages'] = [static::$name];
       $field_parameters = [];
       # add parameters for each field
       foreach($field_names as $field_name){
-        $parameters = $klass::$fields[$field_name];
+        $parameters = static::$fields[$field_name];
         $parameters['id'] = $field_name;
         if(!isset($parameters['type'])){
           $parameters['type'] = 'text';
@@ -73,6 +73,11 @@ class CustomPost {
       });
     }
   }
+
+  static function has_field($field){
+    return isset(static::$fields[$field]);
+  }
+
 }
 
 ?>
