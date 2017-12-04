@@ -93,8 +93,17 @@ class CustomPost {
   }
 
   function __get($thing){
+    # alias for returning post permalink
+    if('permalink' == $thing) return get_permalink($this->base->ID);
+    # aliases for some post values
+    if('title' == $thing) $thing = 'post_title';
+    if('content' == $thing) $thing = 'post_content';
+    if('id' == $thing) $thing = 'ID';
+    # returns a custom field or a post attribute
     if(static::has_field($thing)){
       return $this->base_fields[$thing];
+    } elseif(isset($this->base->{$thing})){
+      return $this->base->{$thing};
     }
   }
 
