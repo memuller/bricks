@@ -82,8 +82,15 @@ class CustomPost {
     return isset(static::$fields[$field]);
   }
 
-  function __construct($arg){
-    $this->base = $arg;
+  function __construct($arg=false){
+    if(!$arg){
+      $this->base = $GLOBALS['post'];
+    } elseif(is_numeric($arg)){
+      $this->base = get_post($arg);
+    } else {
+      $this->base = $arg;
+    }
+    
     $all_meta = get_post_custom($this->base->ID);
     foreach($all_meta as $field_name => $field_values){
       if(static::has_field($field_name)){
