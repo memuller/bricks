@@ -10,6 +10,9 @@ class CustomPost {
           $description, $show_ui, $menu_position, $menu_icon,
           $hierarchical, $capability_type ;
 
+  private $base_fields;
+  public $base;
+
   static function build(){
     $klass = get_called_class();
     $klass::prepare_parameters();
@@ -71,11 +74,28 @@ class CustomPost {
         $boxes[]= $box_parameters;
         return $boxes;
       });
+
     }
   }
 
   static function has_field($field){
     return isset(static::$fields[$field]);
+  }
+
+  function __construct($arg){
+    $this->base = $arg;
+    $all_meta = get_post_custom($this->base->ID);
+    foreach($all_meta as $field_name => $field_values){
+      if(static::has_field($field_name)){
+        $this->base_fields[$field_name] = $field_values[0];
+      }
+    }
+  }
+
+  function __get($thing){
+    if(static::has_field($thing)){
+      return $this->base_fields[$thing];
+    }
   }
 
 }
