@@ -15,9 +15,7 @@
 	},
 
 	"autoload": {
-		"psr-0": {
-			"Bricks": "src/"
-		}
+		"files": [ "bricks.php" ]
 	},
 	"minimum-stability": "dev",
 	"repositories": [
