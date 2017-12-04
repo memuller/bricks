@@ -102,9 +102,22 @@ class CustomPost {
     # returns a custom field or a post attribute
     if(static::has_field($thing)){
       return $this->base_fields[$thing];
-    } elseif(isset($this->base->{$thing})){
+    } elseif(property_exists($this->base, $thing)){
       return $this->base->{$thing};
     }
+  }
+
+  function __set($thing, $value){
+    if(in_array($thing, ['title', 'name', 'content'])){
+      $thing = "post_$thing";
+    }
+    if(property_exists($this->base, $thing)){
+      $this->base->{$thing} = $value;
+      \wp_update_post($this->base);
+    } else {
+      \update_metadata('post', $this->base->ID, $thing, $value);
+    }
+    return $value;
   }
 
 }
