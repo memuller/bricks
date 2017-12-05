@@ -3,6 +3,7 @@ namespace Bricks;
 class BaseItem {
   static  $fields = array(),
           $boxes = array(),
+          $columns = array(),
           $name, $label,
           $creation_parameters = array();
   
@@ -14,6 +15,7 @@ class BaseItem {
     static::prepare_parameters();
     static::create_content_type();
     static::create_metaboxes();
+    static::set_columns();
   }
 
   static function guess_names(){
@@ -60,6 +62,36 @@ class BaseItem {
         }
       });
     }
+  }
+
+  static function set_columns(){
+    $klass = get_called_class(); 
+    $class_name = static::$name;
+    $has = [ 'add' => !empty(static::$columns) ];
+    $filters = [
+      'set' => "manage_${class_name}_posts_columns",
+      'display' => "manage_${class_name}_posts_custom_column"
+    ];
+
+    if($has['add']){
+      
+      add_filter($filters['set'], function($columns) use($klass, $has) {
+        if($has['add']){
+          foreach($klass::$columns as $name => $label){
+            $columns[$name] = __($label);
+          }
+        }
+        return $columns;
+      });
+
+      add_action($filters['display'], function($column, $ID) use($klass){
+        $obj = new $klass($ID);
+        if($klass::has_field($column) || property_exists($obj->base, $column)){
+          echo $obj->{$column};
+        }
+      }, 10, 2);
+    }
+
   }
 
   static function has_field($field){
