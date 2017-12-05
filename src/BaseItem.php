@@ -77,7 +77,12 @@ class BaseItem {
       
       add_filter($filters['set'], function($columns) use($klass, $has) {
         if($has['add']){
-          foreach($klass::$columns as $name => $label){
+          $columns_to_add = $klass::$columns;
+          if(isset($columns['date'])){
+            unset($columns['date']);
+            $columns_to_add['date'] = __('Date');
+          }
+          foreach($columns_to_add as $name => $label){
             $columns[$name] = __($label);
           }
         }
