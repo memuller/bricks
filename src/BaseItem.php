@@ -111,5 +111,13 @@ class BaseItem {
       }
     }
   }
+
+  function __get($thing){
+    if(static::has_field($thing)){
+      return $this->base_fields[$thing];
+    } elseif(property_exists($this->base, $thing)){
+      return $this->base->{$thing};
+    }
+  }
 }
 ?>

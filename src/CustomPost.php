@@ -46,11 +46,7 @@ class CustomPost extends BaseItem {
     if('content' == $thing) $thing = 'post_content';
     if('id' == $thing) $thing = 'ID';
     # returns a custom field or a post attribute
-    if(static::has_field($thing)){
-      return $this->base_fields[$thing];
-    } elseif(property_exists($this->base, $thing)){
-      return $this->base->{$thing};
-    }
+    return parent::__get($thing);
   }
 
   function __set($thing, $value){
