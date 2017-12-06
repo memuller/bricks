@@ -67,11 +67,20 @@ class BaseItem {
   static function set_columns(){
     $klass = get_called_class(); 
     $class_name = static::$name;
+    
     $has = [ 'add' => !empty(static::$columns) ];
-    $filters = [
-      'set' => "manage_${class_name}_posts_columns",
-      'display' => "manage_${class_name}_posts_custom_column"
-    ];
+    
+    if('post' == static::$content_type){
+      $filters = [
+        'set' => "manage_${class_name}_posts_columns",
+        'display' => "manage_${class_name}_posts_custom_column"
+      ];
+    } else {
+      $filters = [
+        'set' => "manage_users_columns",
+        'display' => 'manage_users_custom_column'
+      ];
+    }
 
     if($has['add']){
       
@@ -89,12 +98,18 @@ class BaseItem {
         return $columns;
       });
 
-      add_action($filters['display'], function($column, $ID) use($klass){
-        $obj = new $klass($ID);
-        if($klass::has_field($column) || property_exists($obj->base, $column)){
-          echo $obj->{$column};
-        }
-      }, 10, 2);
+      if('post' == static::$content_type){
+        add_action($filters['display'], function($column, $ID) use($klass){
+          $obj = new $klass($ID);
+          echo $obj->{$column} ? $obj->{$column} : '—' ;
+        }, 10, 2);
+      } else {
+        add_filter($filters['display'], function($out, $column, $ID) use($klass){
+          $obj = new $klass($ID);
+          $out = $obj->{$column};
+          return $out ? $out : '—';
+        }, 10, 3);
+      }
     }
 
   }

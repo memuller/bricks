@@ -6,13 +6,13 @@ class CustomPost extends BaseItem {
   static  $public = true,
           $labels, $supports, $taxonomies,
           $description, $show_ui, $menu_position, $menu_icon,
-          $hierarchical, $capability_type ;
+          $hierarchical = false, $show_in_rest = true, $capability_type ;
 
   
   static function prepare_parameters(){
     
     # sets post registration parameters
-    foreach(['label', 'labels', 'public', 'supports', 'taxonomies', 'description', 'show_ui', 'menu_position', 'menu_icon', 'hierarchical', 'capability_type'] as $arg){
+    foreach(['label', 'labels', 'public', 'supports', 'taxonomies', 'description', 'show_ui', 'menu_position', 'menu_icon', 'hierarchical', 'capability_type', 'show_in_rest'] as $arg){
       if(isset(static::$$arg)){
         static::$creation_parameters[$arg] = static::$$arg;
       }

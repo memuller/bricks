@@ -56,9 +56,12 @@ class CustomUser extends BaseItem {
             (static::$allow_admin && in_array('administrator', $user->roles));
   }
 
+  # fetches an user by given ID or the current one
   function __construct($arg=false){
     if(!$arg){
       $arg = wp_get_current_user() ;  
+    } elseif(is_numeric($arg)){
+      $arg = get_user_by('ID', $arg);
     }
     $this->base = $arg;
     parent::__construct($this->base);
