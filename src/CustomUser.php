@@ -13,7 +13,9 @@ class CustomUser extends BaseItem {
     # shows boxes only if an user belonging to this class is being edited
     foreach(static::$boxes as $id => $box){ 
       $box['show_on_cb'] = function() use($klass) {
-        return static::user_belongs(static::get_currently_edited_user());
+        $user = static::get_currently_edited_user();
+        if(!$user) return false;
+        return static::user_belongs($user);
       };
       $boxes[$id] = $box;
     }
@@ -45,8 +47,10 @@ class CustomUser extends BaseItem {
     # if IS_PROFILE_PAGE, user is editing itself
     if(defined('IS_PROFILE_PAGE') && IS_PROFILE_PAGE){
       return wp_get_current_user();
-    } else { #otherwise there's always an user_id as GET param
+    } elseif(isset($_GET['user_id'])) { #otherwise there's always an user_id as GET param
       return get_user_by('ID', $_GET['user_id']);
+    } else { # ...unless it's a new user page and it doesn't exist yet
+      return null;
     }
   }
 
