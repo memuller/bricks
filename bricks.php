@@ -17,6 +17,10 @@
 	function sibling_class($class, $sibling){
 		$namespace = get_namespace($sibling);
 		return $namespace.'\\'.$class ;
-  }
+	}
+	
+	function loopable($arg){
+		return is_array($arg) ? $arg : [$arg];
+	}
   
 ?>
