@@ -53,13 +53,8 @@ class CustomPost extends BaseItem {
     if(in_array($thing, ['title', 'name', 'content'])){
       $thing = "post_$thing";
     }
-    if(property_exists($this->base, $thing)){
-      $this->base->{$thing} = $value;
-      \wp_update_post($this->base);
-    } else {
-      \update_metadata('post', $this->base->ID, $thing, $value);
-    }
-    return $value;
+
+    return parent::__set($thing, $value);
   }
 
 }

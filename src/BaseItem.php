@@ -118,6 +118,14 @@ class BaseItem {
     return isset(static::$fields[$field]);
   }
 
+  function save_base(){
+    if('post' == static::$content_type){
+      return \wp_update_post($this->base);
+    } else {
+      return \wp_update_user($this->base);
+    }
+  }
+
   function __construct($arg=false){
     $all_meta = get_metadata(static::$content_type, $this->base->ID);
     foreach($all_meta as $field_name => $field_values){
@@ -133,6 +141,16 @@ class BaseItem {
     } elseif(property_exists($this->base, $thing)){
       return $this->base->{$thing};
     }
+  }
+
+  function __set($thing, $value){
+    if(property_exists($this->base, $thing)){
+      $this->base->{$thing} = $value;
+      $this->save_base();  
+    } else {
+      \update_metadata(static::$content_type, $this->base->ID, $thing, $value);
+    }
+    return $value;
   }
 }
 ?>
