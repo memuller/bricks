@@ -35,17 +35,14 @@ class BaseItem {
   }
 
   static function create_metaboxes(){
-    $klass = get_called_class();
+    $klass = get_called_class(); $name = static::$name;
     foreach(static::$boxes as $bid => $box){
       # sets up box parameters
       $field_names = $box['fields'];
       $box_parameters = $box;
       unset($box_parameters['fields']);
-      $box_parameters['id'] = $bid;
+      $box_parameters['id'] = "{$name}_$bid";
       $box_parameters['object_types'] = static::$content_type == 'post' ? [static::$name] : [static::$content_type] ;
-      // $box_parameters['show_on_cb'] = function() use($klass){
-      //   return false;
-      // };
       $field_parameters = [];
       # add parameters for each field
       foreach($field_names as $field_name){
