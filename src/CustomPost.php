@@ -10,13 +10,14 @@ class CustomPost extends BaseItem {
 
   
   static function prepare_parameters(){
-    
+    $klass = get_called_class(); $params = array();
     # sets post registration parameters
     foreach(['label', 'labels', 'public', 'supports', 'taxonomies', 'description', 'show_ui', 'menu_position', 'menu_icon', 'hierarchical', 'capability_type', 'show_in_rest'] as $arg){
-      if(isset(static::$$arg)){
-        static::$creation_parameters[$arg] = static::$$arg;
+      if(isset($klass::$$arg)){
+        $params[$arg] = $klass::$$arg;
       }
     }
+    $klass::$creation_parameters =& $params;
   }
 
   

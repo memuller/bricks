@@ -4,8 +4,8 @@ class BaseItem {
   static  $fields = array(),
           $boxes = array(),
           $columns = array(),
-          $name, $label,
-          $creation_parameters = array();
+          $name, $label, $creation_parameters,
+          $has_one = false, $has_many = false, $belongs_to = false;
   
   public $base, $base_fields;
 
@@ -24,11 +24,13 @@ class BaseItem {
     $names = explode('\\', $klass); $name = $names[sizeof($names)-1];
     # post_type name is class name to lowercase if not set
     if(!isset(static::$name)){
-      static::$name = strtolower($name);
+      $lowcase_name = strtolower($name);
+      static::$name =& $lowcase_name;
     }
     # label is the class name +'s' if not set 
     if(!isset(static::$label) && !isset(static::$labels)){
-      static::$label = $name.'s';
+      $name_as_class = $name.'s';
+      static::$label =& $name_as_class;
     }
   }
 
@@ -68,7 +70,7 @@ class BaseItem {
     $klass = get_called_class(); 
     $class_name = static::$name;
     
-    $has = [ 'add' => !empty(static::$columns) ];
+    $has = [ 'add' => !empty($klass::$columns) ];
     
     if('post' == static::$content_type){
       $filters = [
