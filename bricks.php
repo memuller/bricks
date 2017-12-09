@@ -14,6 +14,11 @@
 		return $namespace[0];
 	}
 
+	function get_classname($arg){
+		$class = explode('\\', $arg);
+		return $class[sizeof($class)-1];
+	}
+
 	function sibling_class($class, $sibling){
 		$namespace = get_namespace($sibling);
 		return $namespace.'\\'.$class ;
