@@ -83,17 +83,21 @@ class BaseItem {
     }
 
     if($has['add']){
-      
       add_filter($filters['set'], function($columns) use($klass, $has) {
-        if($has['add']){
-          $columns_to_add = $klass::$columns;
-          if(isset($columns['date'])){
-            unset($columns['date']);
-            $columns_to_add['date'] = __('Date');
-          }
-          foreach($columns_to_add as $name => $label){
-            $columns[$name] = __($label);
-          }
+        # skips column if we're on a user page that isn't listing this class user role
+        if($klass::$content_type == 'user' && !(isset($_GET['role'])) || $_GET['role'] != $klass::$name){
+          return $columns;
+        }
+
+        $columns_to_add = $klass::$columns;
+        # if there's a date column, moves it so it's always the last one
+        if(isset($columns['date'])){
+          unset($columns['date']);
+          $columns_to_add['date'] = __('Date');
+        }
+
+        foreach($columns_to_add as $name => $label){
+          $columns[$name] = __($label);
         }
         return $columns;
       });
