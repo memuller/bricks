@@ -27,5 +27,4 @@
 	function loopable($arg){
 		return is_array($arg) ? $arg : [$arg];
 	}
-  
 ?>

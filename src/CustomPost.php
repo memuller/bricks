@@ -24,7 +24,7 @@ class CustomPost extends BaseItem {
   static function create_content_type(){
     $klass = get_called_class();
     add_action('init', function() use($klass) {
-      \register_post_type( $klass::$name, $klass::$creation_parameters );
+      \register_post_type( $klass::name(), $klass::$creation_parameters );
     });
   }
 

@@ -11,38 +11,51 @@ class BaseItem {
 
   static function build(){
     $klass = get_called_class();
-    static::guess_names();
+    // static::guess_names();
     static::prepare_parameters();
     static::create_content_type();
     static::create_metaboxes();
     static::set_columns();
   }
 
-  static function guess_names(){
+  static function label(){
+    if(isset(static::$label)) return static::$label;
+    $name = static::name();
+    return ucfirst($name).'s';
+  }
+
+  static function name(){
+    if(isset(static::$name)) return static::$name; 
     $klass = get_called_class();
-    
     $names = explode('\\', $klass); $name = $names[sizeof($names)-1];
-    # post_type name is class name to lowercase if not set
-    if(!isset(static::$name)){
-      $lowcase_name = strtolower($name);
-      static::$name =& $lowcase_name;
-    }
-    # label is the class name +'s' if not set 
-    if(!isset(static::$label) && !isset(static::$labels)){
-      $name_as_class = $name.'s';
-      static::$label =& $name_as_class;
-    }
+    return strtolower($name);
+  }
+
+  static function prepare_relationships(){
+    // $class = get_called_class(); $namespace = get_namespace($class);
+    // $boxes = static::$boxes; $fields = static::$fields;
+
+    // if(static::$belongs_to){
+    //   foreach(loopable(static::$belongs_to) as $parent){
+        
+    //     $fields[$parent] = [
+    //       'name' => 
+    //     ];
+    //   }
+    // }
+
+    // static::$fields =& $fields;
   }
 
   static function create_metaboxes(){
-    $klass = get_called_class(); $name = static::$name;
+    $klass = get_called_class(); $name = static::name();
     foreach(static::$boxes as $bid => $box){
       # sets up box parameters
       $field_names = $box['fields'];
       $box_parameters = $box;
       unset($box_parameters['fields']);
       $box_parameters['id'] = "{$name}_$bid";
-      $box_parameters['object_types'] = static::$content_type == 'post' ? [static::$name] : [static::$content_type] ;
+      $box_parameters['object_types'] = static::$content_type == 'post' ? [$name] : [static::$content_type] ;
       $field_parameters = [];
       # add parameters for each field
       foreach($field_names as $field_name){
@@ -65,7 +78,7 @@ class BaseItem {
 
   static function set_columns(){
     $klass = get_called_class(); 
-    $class_name = static::$name;
+    $class_name = static::name();
     
     $has = [ 'add' => !empty($klass::$columns) ];
     
@@ -84,7 +97,7 @@ class BaseItem {
     if($has['add']){
       add_filter($filters['set'], function($columns) use($klass, $has) {
         # skips column if we're on a user page that isn't listing this class user role
-        if($klass::$content_type == 'user' && !(isset($_GET['role'])) || $_GET['role'] != $klass::$name){
+        if($klass::$content_type == 'user' && !(isset($_GET['role'])) || $_GET['role'] != $klass::name()){
           return $columns;
         }
 
