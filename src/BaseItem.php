@@ -11,8 +11,8 @@ class BaseItem {
 
   static function build(){
     $klass = get_called_class();
-    // static::guess_names();
     static::prepare_parameters();
+    static::prepare_relationships();
     static::create_content_type();
     static::create_metaboxes();
     static::set_columns();
@@ -32,19 +32,29 @@ class BaseItem {
   }
 
   static function prepare_relationships(){
-    // $class = get_called_class(); $namespace = get_namespace($class);
-    // $boxes = static::$boxes; $fields = static::$fields;
+    if(!static::$belongs_to) return ;
+    $class = get_called_class(); $namespace = get_namespace($class);
+    $boxes = static::$boxes; $fields = static::$fields;
 
-    // if(static::$belongs_to){
-    //   foreach(loopable(static::$belongs_to) as $parent){
-        
-    //     $fields[$parent] = [
-    //       'name' => 
-    //     ];
-    //   }
-    // }
+    foreach(loopable(static::$belongs_to) as $parent){
+      $parent_class = sibling_class(ucfirst($parent), $class);
+      $fields[$parent] = [
+        'id'                => $parent_class::name(),
+        'name'              => $parent_class::label(),
+        'type'              => 'select',
+        'show_option_none'  => false,
+        'options_cb'        => function() use ($parent_class){
+          $posts = $parent_class::all();
+          $options = array();
+          foreach($posts as $post){
+            $options[$post->ID] = $post->title;
+          }
+          return $options;
+        }
+      ];
+    }
 
-    // static::$fields =& $fields;
+    static::$fields =& $fields;
   }
 
   static function create_metaboxes(){

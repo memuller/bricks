@@ -58,6 +58,19 @@ class CustomPost extends BaseItem {
     return parent::__set($thing, $value);
   }
 
+  static function all($params = array()){
+    $class = get_called_class();
+    $default_params = [
+      'post_type'     => static::name()
+    ];
+
+    $params = array_merge($default_params, $params);
+    $posts = get_posts($params);
+    return array_map(function($post) use($class){
+      return new $class($post);
+    }, $posts);
+  }
+
 }
 
 ?>  
