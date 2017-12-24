@@ -6,10 +6,10 @@ class BaseItem {
           $columns = array(),
           $name, $label, $creation_parameters,
           $has_one = false, $has_many = false, $belongs_to = false;
-  
+
   public $base, $base_fields;
 
-  static function build(){
+  static function init(){
     $klass = get_called_class();
     static::prepare_parameters();
     static::prepare_relationships();
@@ -25,7 +25,7 @@ class BaseItem {
   }
 
   static function name(){
-    if(isset(static::$name)) return static::$name; 
+    if(isset(static::$name)) return static::$name;
     $klass = get_called_class();
     $names = explode('\\', $klass); $name = $names[sizeof($names)-1];
     return strtolower($name);
@@ -87,11 +87,11 @@ class BaseItem {
   }
 
   static function set_columns(){
-    $klass = get_called_class(); 
+    $klass = get_called_class();
     $class_name = static::name();
-    
+
     $has = [ 'add' => !empty($klass::$columns) ];
-    
+
     if('post' == static::$content_type){
       $filters = [
         'set' => "manage_${class_name}_posts_columns",
@@ -172,7 +172,7 @@ class BaseItem {
   function __set($thing, $value){
     if(property_exists($this->base, $thing)){
       $this->base->{$thing} = $value;
-      $this->save_base();  
+      $this->save_base();
     } else {
       \update_metadata(static::$content_type, $this->base->ID, $thing, $value);
     }
