@@ -12,10 +12,20 @@ class CustomUser extends BaseItem {
     $boxes = array();
     # shows boxes only if an user belonging to this class is being edited
     foreach(static::$boxes as $id => $box){
-      $box['show_on_cb'] = function() use($klass) {
+      $old_cb = isset($box['show_on_cb']) ? $box['show_on_cb'] : false;
+      $box['show_on_cb'] = function($cmb) use($klass, $old_cb) {
         $user = static::get_currently_edited_user();
         if(!$user) return false;
-        return static::user_belongs($user);
+
+        $user_belongs = static::user_belongs($user);
+        if($user_belongs){
+          if($old_cb){
+            $cb_result = $old_cb($cmb);
+            return $cb_result;
+          }
+          return true;
+        }
+        return false;
       };
       $boxes[$id] = $box;
     }
