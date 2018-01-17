@@ -10,12 +10,30 @@ class BaseItem {
   public $base, $base_fields;
 
   static function init(){
-    $klass = get_called_class();
     static::prepare_parameters();
     static::prepare_relationships();
     static::create_content_type();
+    static::prepare_metaboxes();
     static::create_metaboxes();
     static::set_columns();
+  }
+
+  static function prepare_metaboxes(){
+    $boxes = static::$boxes;
+    if (!$boxes || sizeof($boxes) == 0) {
+      if (!static::$fields || sizeof(static::$fields) == 0) return ;
+      $box_name = "default";
+      if (isset(static::$slug)) {
+        $box_name.='_'.static::$slug;
+      }
+      $boxes[$box_name] = [
+        'title' => '',
+        'show_title' => false,
+        'context' => 'after_editor',
+        'fields' => array_keys(static::$fields)
+      ];
+    }
+    static::$boxes = $boxes;
   }
 
   static function label(){
@@ -59,6 +77,11 @@ class BaseItem {
 
   static function create_metaboxes(){
     $klass = get_called_class(); $name = static::name();
+    $print = false;
+    if ($klass == 'Quantico\Contract') {
+      $print = true;
+    }
+    if (!static::$boxes) return ;
     foreach(static::$boxes as $bid => $box){
       # sets up box parameters
       $field_names = $box['fields'];
@@ -77,10 +100,13 @@ class BaseItem {
         $field_parameters[]= $parameters;
       }
       # hooks box creation
-      add_action('cmb2_admin_init', function() use($box_parameters, $field_parameters){
+      add_action('cmb2_admin_init', function() use($box_parameters, $field_parameters, $print){
         $box = new_cmb2_box($box_parameters);
         foreach($field_parameters as $field){
           $box->add_field($field);
+        }
+        if($print ) {
+          // die(print_r($field_parameters, true));
         }
       });
     }
@@ -107,10 +133,11 @@ class BaseItem {
     if($has['add']){
       add_filter($filters['set'], function($columns) use($klass, $has) {
         # skips column if we're on a user page that isn't listing this class user role
-        if($klass::$content_type == 'user' && !(isset($_GET['role'])) || $_GET['role'] != $klass::name()){
-          return $columns;
+        if ($klass::$content_type == 'user'){
+          if (!(isset($_GET['role'])) || $_GET['role'] != $klass::name()){
+            return $columns;
+          }
         }
-
         $columns_to_add = $klass::$columns;
         # if there's a date column, moves it so it's always the last one
         if(isset($columns['date'])){

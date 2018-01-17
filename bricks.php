@@ -2,6 +2,7 @@
   require_once 'src/BaseItem.php';
   require_once 'src/CustomUser.php';
   require_once 'src/CustomPost.php' ;
+  require_once 'src/CustomSingle.php';
 
 
   function property_or_key($object, $arg){
@@ -23,7 +24,7 @@
 		$namespace = get_namespace($sibling);
 		return $namespace.'\\'.$class ;
 	}
-	
+
 	function loopable($arg){
 		return is_array($arg) ? $arg : [$arg];
 	}
