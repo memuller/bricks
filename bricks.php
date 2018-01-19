@@ -7,8 +7,11 @@
 
   function property_or_key($object, $arg){
 		return is_array($object) ? $object[$arg] : $object->$arg ;
-
 	}
+
+  function property_or_method($object, $arg) {
+    return method_exists($object, $arg) ? $object->{$arg}() : $object->$arg; 
+  }
 
 	function get_namespace($class){
 		$namespace = explode('\\', $class);
