@@ -3,7 +3,7 @@ namespace Bricks;
 class BaseItem {
   static  $fields = array(),
           $boxes = array(),
-          $columns = array(),
+          $columns = array(), $hide_columns = array(),
           $name, $label, $creation_parameters,
           $has_one = false, $has_many = false, $belongs_to = false;
 
@@ -14,9 +14,12 @@ class BaseItem {
     static::prepare_relationships();
     static::create_content_type();
     static::prepare_metaboxes();
+    static::setup_hooks();
     static::create_metaboxes();
     static::set_columns();
   }
+
+  static function setup_hooks(){}
 
   static function prepare_metaboxes(){
     $boxes = static::$boxes;
@@ -116,21 +119,23 @@ class BaseItem {
     $klass = get_called_class();
     $class_name = static::name();
 
-    $has = [ 'add' => !empty($klass::$columns) ];
+    $has = [
+      'add' => !empty($klass::$columns),
+      'hide' => !empty($klass::$hide_columns) ]
+    ;
+    if($has['add'] || $has['hide']){
+      if('post' == static::$content_type){
+        $filters = [
+          'set' => "manage_${class_name}_posts_columns",
+          'display' => "manage_${class_name}_posts_custom_column"
+        ];
+      } else {
+        $filters = [
+          'set' => "manage_users_columns",
+          'display' => 'manage_users_custom_column'
+        ];
+      }
 
-    if('post' == static::$content_type){
-      $filters = [
-        'set' => "manage_${class_name}_posts_columns",
-        'display' => "manage_${class_name}_posts_custom_column"
-      ];
-    } else {
-      $filters = [
-        'set' => "manage_users_columns",
-        'display' => 'manage_users_custom_column'
-      ];
-    }
-
-    if($has['add']){
       add_filter($filters['set'], function($columns) use($klass, $has) {
         # skips column if we're on a user page that isn't listing this class user role
         if ($klass::$content_type == 'user'){
@@ -138,15 +143,24 @@ class BaseItem {
             return $columns;
           }
         }
-        $columns_to_add = $klass::$columns;
-        # if there's a date column, moves it so it's always the last one
-        if(isset($columns['date'])){
-          unset($columns['date']);
-          $columns_to_add['date'] = __('Date');
+
+        if ($has['add']) {
+          $columns_to_add = $klass::$columns;
+          # if there's a date column, moves it so it's always the last one
+          if(isset($columns['date'])){
+            unset($columns['date']);
+            $columns_to_add['date'] = __('Date');
+          }
+
+          foreach($columns_to_add as $name => $label){
+            $columns[$name] = __($label);
+          }
         }
 
-        foreach($columns_to_add as $name => $label){
-          $columns[$name] = __($label);
+        if ($has['hide']) {
+          foreach($klass::$hide_columns as $column) {
+            unset($columns[$column]);
+          }
         }
         return $columns;
       });
@@ -154,12 +168,13 @@ class BaseItem {
       if('post' == static::$content_type){
         add_action($filters['display'], function($column, $ID) use($klass){
           $obj = new $klass($ID);
-          echo $obj->{$column} ? $obj->{$column} : '—' ;
+          $out = property_or_method($obj, $column);
+          echo $out ? $out  : '—' ;
         }, 10, 2);
       } else {
         add_filter($filters['display'], function($out, $column, $ID) use($klass){
           $obj = new $klass($ID);
-          $out = $obj->{$column};
+          $out = property_or_method($obj, $column);
           return $out ? $out : '—';
         }, 10, 3);
       }
@@ -177,6 +192,10 @@ class BaseItem {
     } else {
       return \wp_update_user($this->base);
     }
+  }
+
+  function save() {
+
   }
 
   function __construct($arg=false){
