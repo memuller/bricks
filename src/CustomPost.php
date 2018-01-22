@@ -72,20 +72,43 @@ class CustomPost extends BaseItem {
     }, $posts);
   }
 
+  static function first($params = array()) {
+    $params['posts_per_page'] = 1;
+    $result = static::all($params);
+    if(!$result || sizeof($result) == 0) {
+      return null;
+    } else {
+      return $result[0];
+    }
+  }
+
   static function setup_hooks(){
     $class = get_called_class();
 
     if (is_callable([$class, 'on_views_edit'])){
       add_filter("views_edit-".static::name(), [$class, 'on_views_edit']);
     }
-    
+
     if (is_callable([$class, 'on_save'])){
       add_action('save_post', function($post_id, $post, $update) use ($class) {
         if (defined('DOING_AUTOSAVE') && DOING_AUTOSAVE) return ;
         if ($class::name() != $post->post_type) return ;
         $obj = new $class($post_id);
         $class::on_save($obj, $update);
-      }, 10, 3);
+      }, 30, 3);
+    }
+
+    if (static::$hide_add) {
+      add_action('admin_menu', function() use($class) {
+        $post_type = $class::name();
+        global $submenu;
+        if (isset(static::$hide_add)) {
+          unset($submenu["edit.php?post_type=$post_type"][10]);
+          if (isset($_GET['post_type']) && $_GET['post_type'] == $post_type) {
+            echo '<style type="text/css">.page-title-action { display:none; }</style>';
+          }
+        }
+      });
     }
   }
 
