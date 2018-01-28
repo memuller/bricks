@@ -8,7 +8,6 @@ class CustomPost extends BaseItem {
           $description, $show_ui, $menu_position, $menu_icon,
           $hierarchical = false, $show_in_rest = true, $capability_type, $capabilities, $map_meta_cap, $hide_add = false ;
 
-
   static function prepare_parameters(){
     $klass = get_called_class(); $params = array();
     # sets post registration parameters
@@ -82,6 +81,16 @@ class CustomPost extends BaseItem {
     }
   }
 
+  static function on_save_hook($post_id, $post, $update) {
+    $class = get_called_class();
+    if (defined('DOING_AUTOSAVE') && DOING_AUTOSAVE) return ;
+    if ($class::name() != $post->post_type) return ;
+    $obj = new $class($post_id);
+    remove_action('save_post', [$class, 'on_save_hook'], 30);
+    $class::on_save($obj, $update);
+    add_action('save_post', [$class, 'on_save_hook'], 30, 3);
+  }
+
   static function setup_hooks(){
     $class = get_called_class();
 
@@ -90,12 +99,7 @@ class CustomPost extends BaseItem {
     }
 
     if (is_callable([$class, 'on_save'])){
-      add_action('save_post', function($post_id, $post, $update) use ($class) {
-        if (defined('DOING_AUTOSAVE') && DOING_AUTOSAVE) return ;
-        if ($class::name() != $post->post_type) return ;
-        $obj = new $class($post_id);
-        $class::on_save($obj, $update);
-      }, 30, 3);
+      add_action('save_post', [$class, 'on_save_hook'] , 30, 3);
     }
 
     if (static::$hide_add) {
