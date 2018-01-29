@@ -29,6 +29,7 @@
 	}
 
 	function loopable($arg){
+		if ($arg == null) return [];
 		return is_array($arg) ? $arg : [$arg];
 	}
 
