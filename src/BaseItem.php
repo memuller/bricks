@@ -4,7 +4,7 @@ class BaseItem {
   static  $fields = array(),
           $boxes = array(),
           $columns = array(), $hide_columns = array(),
-          $name, $label, $creation_parameters,
+          $name, $label, $creation_parameters, $actions,
           $has_one = false, $has_many = false, $belongs_to = false;
 
   public $base, $base_fields;
@@ -17,10 +17,21 @@ class BaseItem {
     static::setup_hooks();
     static::create_metaboxes();
     static::set_columns();
+    static::hook_ajax_actions();
   }
 
   static function setup_hooks(){}
 
+  static function hook_ajax_actions () {
+    $class = get_called_class();
+    if (static::$actions && sizeof(static::$actions) > 0) {
+      foreach (static::$actions as $name => $method) {
+        if (is_int($name)) $name = $method;
+        $action_name = sprintf("wp_ajax_%s_%s", static::name(), $name);
+        add_action($action_name, [$class, $method]);
+      }
+    }
+  }
   static function prepare_metaboxes(){
     $boxes = static::$boxes;
     if (!$boxes || sizeof($boxes) == 0) {
