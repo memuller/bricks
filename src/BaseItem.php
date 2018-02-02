@@ -81,9 +81,6 @@ class BaseItem {
   static function create_metaboxes(){
     $klass = get_called_class(); $name = static::name();
     $print = false;
-    if ($klass == 'Quantico\Contract') {
-      $print = true;
-    }
     if (!static::$boxes) return ;
     foreach(static::$boxes as $bid => $box){
       # sets up box parameters
@@ -107,9 +104,6 @@ class BaseItem {
         $box = new_cmb2_box($box_parameters);
         foreach($field_parameters as $field){
           $box->add_field($field);
-        }
-        if($print ) {
-          // die(print_r($field_parameters, true));
         }
       });
     }
@@ -209,7 +203,12 @@ class BaseItem {
 
   function __get($thing){
     if(static::has_field($thing)){
-      return $this->base_fields[$thing];
+      if (isset($this->base_fields[$thing])) {
+        return $this->base_fields[$thing];
+      } else if (isset(static::$fields[$thing]['default'])) {
+        return static::$fields[$thing]['default'];
+      } else { return null; }
+      
     } elseif(property_exists($this->base, $thing)){
       return $this->base->{$thing};
     }
