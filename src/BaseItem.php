@@ -24,14 +24,14 @@ class BaseItem {
 
   static function hook_ajax_actions () {
     $class = get_called_class();
-    if (static::$actions && sizeof(static::$actions) > 0) {
-      foreach (static::$actions as $name => $method) {
-        if (is_int($name)) $name = $method;
-        $action_name = sprintf("wp_ajax_%s_%s", static::name(), $name);
-        add_action($action_name, [$class, $method]);
-      }
+    if (!static::$actions || sizeof(static::$actions) == 0) return ;
+    foreach (static::$actions as $name => $method) {
+      if (is_int($name)) $name = $method;
+      $action_name = sprintf("wp_ajax_%s_%s", static::name(), $name);
+      add_action($action_name, [$class, $method]);
     }
   }
+  
   static function prepare_metaboxes(){
     $boxes = static::$boxes;
     if (!$boxes || sizeof($boxes) == 0) {
