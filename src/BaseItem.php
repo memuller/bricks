@@ -21,6 +21,7 @@ class BaseItem {
     static::create_metaboxes();
     static::set_columns();
     static::hook_ajax_actions();
+    static::hook_rest_actions();
   }
 
   static function setup_hooks(){
@@ -78,6 +79,21 @@ class BaseItem {
       if (is_int($name)) $name = $method;
       $action_name = sprintf("wp_ajax_%s_%s", static::name(), $name);
       add_action($action_name, [$class, $method]);
+    }
+  }
+
+  static function hook_rest_actions () {
+    $class = get_called_class();
+    if (isset(static::$rest_actions) && sizeof(static::$rest_actions) > 0) {
+      add_action('rest_api_init', function() use($class){
+        $namespace = strtolower(BRICKS_NAMESPACE);
+        $version = 'v1';
+        foreach (static::$rest_actions as $action => $options) {
+          $options['callback'] = isset($options['callback']) ? [$class, $options['callback']] : [ $class, 'rest_'.$action ];
+          $route = isset($options['route']) ? $options['route'] : "/$action";
+          register_rest_route("$namespace/$version", $route, $options);
+        }
+      });
     }
   }
 
