@@ -105,11 +105,18 @@ class BaseItem {
       if (isset(static::$slug)) {
         $box_name.='_'.static::$slug;
       }
+
+      $fields = array_filter(static::$fields, function($value, $key) {
+        if (!isset($value['display'])) return true;
+        if ($value['display'] === false) return false;
+        return true;
+      }, ARRAY_FILTER_USE_BOTH);
+
       $boxes[$box_name] = [
         'title' => '',
         'show_title' => false,
         'context' => 'after_editor',
-        'fields' => array_keys(static::$fields)
+        'fields' => array_keys($fields)
       ];
     }
     static::$boxes = $boxes;
