@@ -1,10 +1,13 @@
 <?php
 namespace Bricks;
+use WP_Query, WP_User_Query;
+
 class BaseItem {
   static  $fields = array(),
           $boxes = array(),
           $columns = array(), $hide_columns = array(),
-          $name, $label, $creation_parameters, $actions,
+          $name, $label, $creation_parameters, 
+          $ajax_actions, $rest_actions, $filters, $views,
           $has_one = false, $has_many = false, $belongs_to = false;
 
   public $base, $base_fields;
@@ -20,18 +23,64 @@ class BaseItem {
     static::hook_ajax_actions();
   }
 
-  static function setup_hooks(){}
+  static function setup_hooks(){
+    $class = get_called_class();
+    if (static::$views && sizeof(static::$views) > 0) {
+      if (static::$content_type == 'post') {
+        add_filter('views_edit-'.static::name(), [$class, 'hook_views']);
+      } else {
+        add_filter('views_users', function ($views) use ($class) {
+          if (!(isset($_GET['role'])) || $_GET['role'] != $klass::name()) return $views;
+          return $class::hook_views($views);
+        });
+      }
+    }
+  }
+
+  static function hook_views ($views) {
+    foreach (static::$views as $view => $options) {
+      if ($options == false && isset($views[$view])) {
+        unset($views[$view]); continue;
+      }
+
+      $base_url = static::$content_type == 'post' ? '?post_type='.static::name() : '?user_role='.static::name();
+
+      if (isset($options['url'])) {
+        if ($options['url'][0] == '&') {
+          $url = $base_url.$options['url'];
+        } else { 
+          $url = $options['url']; 
+        }
+      } else {
+        $filter_name = isset($options['filter']) ? $options['filter'] : $view;
+        $url = "$base_url&filter=$filter_name";
+
+      }
+      if (isset($options['count'])) {
+        $found_query = new WP_Query(static::build_query_params($filter_name));
+        $found_num = $found_query->found_posts;
+        $found = sprintf('<span class="count">(%s)</span>', $found_num);
+      }
+      if ('?'.$_SERVER['QUERY_STRING'] == $url) {
+        $current = 'current';
+      } else { $current = ''; }
+      
+      $link = sprintf('<a class="%s" href="%s">%s %s</a>', $current, $url, $options['label'], $found);
+      $views[$view] = $link;
+    }
+    return $views;
+  }
 
   static function hook_ajax_actions () {
     $class = get_called_class();
-    if (!static::$actions || sizeof(static::$actions) == 0) return ;
-    foreach (static::$actions as $name => $method) {
+    if (!static::$ajax_actions || sizeof(static::$ajax_actions) == 0) return ;
+    foreach (static::$ajax_actions as $name => $method) {
       if (is_int($name)) $name = $method;
       $action_name = sprintf("wp_ajax_%s_%s", static::name(), $name);
       add_action($action_name, [$class, $method]);
     }
   }
-  
+
   static function prepare_metaboxes(){
     $boxes = static::$boxes;
     if (!$boxes || sizeof($boxes) == 0) {
@@ -203,11 +252,13 @@ class BaseItem {
 
   }
 
-  function __construct($arg=false){
-    $all_meta = get_metadata(static::$content_type, $this->base->ID);
-    foreach($all_meta as $field_name => $field_values){
-      if(static::has_field($field_name)){
-        $this->base_fields[$field_name] = $field_values[0];
+  function __construct($base, $build = true){
+    if ($build) {
+      $all_meta = get_metadata(static::$content_type, $this->base->ID);
+      foreach($all_meta as $field_name => $field_values){
+        if(static::has_field($field_name)){
+          $this->base_fields[$field_name] = $field_values[0];
+        }
       }
     }
   }
@@ -220,7 +271,7 @@ class BaseItem {
         return static::$fields[$thing]['default'];
       } else { return null; }
       
-    } elseif(property_exists($this->base, $thing)){
+    } else {
       return $this->base->{$thing};
     }
   }
@@ -233,6 +284,61 @@ class BaseItem {
       \update_metadata(static::$content_type, $this->base->ID, $thing, $value);
     }
     return $value;
+  }
+
+  static function build_query_params($params = array(), $additional_params = false) {
+    if (is_string($params)) {
+      $params = static::$filters[$params];
+      if ($additional_params && is_array($additional_params)) {
+        $params = recursive_replace($params, $additional_params);
+      }
+    }
+    $class = get_called_class();
+    if (static::$content_type == 'post') {
+      $default_params = [
+        'post_type'     => static::name()
+      ]; 
+    } else {
+      $default_params = [
+        'role' => static::name()
+      ];
+    }
+    return array_merge($default_params, $params);
+  }
+
+  static function query_for ($params = array(), $additional_params = false) {
+    $params = static::build_query_params($params, $additional_params);
+    if (static::$content_type == 'post') {
+      return get_posts($params);
+    } else {
+      return get_users($params);
+    }
+  }
+  static function query_items ($params = array(), $additional_params = false) {
+    $params = static::build_query_params($params, $additional_params);
+    if (static::$content_type == 'post') {
+      return get_posts($params);
+    } else {
+      return get_users($params);
+    }
+  }
+
+  static function all($params = array(), $additional_params = false){
+    $class = get_called_class();
+    $items = static::query_items($params, $additional_params);
+    return array_map(function($item) use($class){
+      return new $class($item);
+    }, $items);
+  }
+
+  static function first($params = array()) {
+    $params['posts_per_page'] = 1;
+    $result = static::all($params);
+    if(!$result || sizeof($result) == 0) {
+      return null;
+    } else {
+      return $result[0];
+    }
   }
 }
 ?>
