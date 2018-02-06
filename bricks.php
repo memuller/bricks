@@ -33,6 +33,20 @@
 		return is_array($arg) ? $arg : [$arg];
 	}
 
+	function recursive_replace($arr, $values) {
+		foreach ($arr as $key => $value) {
+			if (is_array($value)){
+				$arr[$key] = recursive_replace($value, $values);
+			} else {
+				foreach($values as $user_key => $user_value) {
+					if (strpos($value, '$'.$user_key) !== false) {
+						$arr[$key] = str_replace('$'.$user_key, $user_value, $value);
+					}
+				}
+			}
+		}
+		return $arr;
+	}
 
 	spl_autoload_register(function(string $class){
     $class_path = explode('\\', $class);
