@@ -1,8 +1,7 @@
 <?php
 namespace Bricks;
-class CustomSingle extends CustomPost {
-  static $post_type, $slug, $title;
-
+trait CustomSingle  {
+  
   static function get_ID() {
     $posts = get_posts([ 'name' => static::$slug, 'post_type' => static::$post_type]);
     if (sizeof($posts) > 0) {
@@ -10,6 +9,12 @@ class CustomSingle extends CustomPost {
     } else {
       return false;
     }
+  }
+
+  static function get () {
+    $id = static::get_ID();
+    if (!$id) return null;
+    return new static($id);
   }
 
   static function create_content_type() {
