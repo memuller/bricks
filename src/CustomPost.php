@@ -27,7 +27,7 @@ class CustomPost extends BaseItem {
     });
   }
 
-  function __construct($arg=false){
+  function __construct($arg = false, $build = true){
     if(!$arg){
       $this->base = $GLOBALS['post'];
     } elseif(is_numeric($arg)){
@@ -35,7 +35,7 @@ class CustomPost extends BaseItem {
     } else {
       $this->base = $arg;
     }
-    parent::__construct($this->base);
+    parent::__construct($this->base, $build);
   }
 
   function __get($thing){
@@ -58,29 +58,6 @@ class CustomPost extends BaseItem {
     return parent::__set($thing, $value);
   }
 
-  static function all($params = array()){
-    $class = get_called_class();
-    $default_params = [
-      'post_type'     => static::name()
-    ];
-
-    $params = array_merge($default_params, $params);
-    $posts = get_posts($params);
-    return array_map(function($post) use($class){
-      return new $class($post);
-    }, $posts);
-  }
-
-  static function first($params = array()) {
-    $params['posts_per_page'] = 1;
-    $result = static::all($params);
-    if(!$result || sizeof($result) == 0) {
-      return null;
-    } else {
-      return $result[0];
-    }
-  }
-
   static function on_save_hook($post_id, $post, $update) {
     $class = get_called_class();
     if (defined('DOING_AUTOSAVE') && DOING_AUTOSAVE) return ;
@@ -92,6 +69,7 @@ class CustomPost extends BaseItem {
   }
 
   static function setup_hooks(){
+    parent::setup_hooks();
     $class = get_called_class();
 
     if (is_callable([$class, 'on_views_edit'])){
@@ -100,6 +78,37 @@ class CustomPost extends BaseItem {
 
     if (is_callable([$class, 'on_save'])){
       add_action('save_post', [$class, 'on_save_hook'] , 30, 3);
+    }
+
+    if (is_admin()) {
+      if (is_callable([$class, 'on_parse_query_admin'])) {
+        add_filter('parse_query', function($query) use($class) {
+          if (!$query->is_main_query()) return ;
+          if ($query->get('post_type') != $class::name()) return ;
+          $class::on_parse_query_admin($query);
+        });
+      }
+    }
+
+    if (is_callable([$class, 'on_parse_query'])) {
+      add_filter('parse_query', function($query) use($class) {
+        if (!is_admin() && !$query->is_main_query()) return ;
+        if ($query->get('post_type') != $class::name()) return ;
+        $class::on_parse_query_admin($query);
+      });
+    }
+
+    if (is_array($class::$filters) && isset($class::$filters['search'])) {
+      if (is_admin()) {
+        add_action('the_posts', function($posts) use($class) {
+          $current_screen = get_current_screen();
+          if ($current_screen->base !== 'edit' || $current_screen->post_type !== $class::name() || !isset($_GET['s'])) return $posts;
+            $additional_posts = $class::query_items('search', ['s' => $_GET['s']]);
+            $posts = array_merge($posts, $additional_posts);
+
+          return $posts;
+        });
+      }
     }
 
     if (static::$hide_add) {
