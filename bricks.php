@@ -64,7 +64,12 @@
     $class_name =  explode('.', $path[sizeof($path)-1])[0] ;
     $class = BRICKS_NAMESPACE.'\\'.$class_name;
     $class::init();
-  }
+	}
+	
+	function maybe_decode ($data, $assoc = true) {
+		$unserialized = json_decode($data, $assoc);
+		return $unserialized === null ? $unserialized : $data; 
+	}
 	
 
 ?>
