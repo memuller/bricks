@@ -89,8 +89,13 @@ class BaseItem {
         $namespace = strtolower(BRICKS_NAMESPACE);
         $version = 'v1';
         foreach (static::$rest_actions as $action => $options) {
-          $options['callback'] = isset($options['callback']) ? [$class, $options['callback']] : [ $class, 'rest_'.$action ];
+          $callback = isset($options['callback']) ? [$class, $options['callback']] : [ $class, 'rest_'.$action ];
           $route = isset($options['route']) ? $options['route'] : "/$action";
+          $options['callback'] = function($request) use ($class, $callback) {
+            $params = $request->get_url_params();
+            $data = $request->get_body_params();
+            call_user_func_array($callback, [$params, $data]);
+          };
           register_rest_route("$namespace/$version", $route, $options);
         }
       });
