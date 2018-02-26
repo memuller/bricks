@@ -8,9 +8,10 @@ class BaseItem {
           $columns = array(), $hide_columns = array(),
           $name, $label, $creation_parameters, 
           $ajax_actions, $rest_actions, $filters, $views,
-          $has_one = false, $has_many = false, $belongs_to = false;
+          $has_one = false, $has_many = false, $belongs_to = false,
+          $map_getters = false;
 
-  public $base, $base_fields;
+  public $base, $meta;
 
   static function init(){
     static::prepare_parameters();
@@ -293,15 +294,41 @@ class BaseItem {
 
   function __get($thing){
     if(static::has_field($thing)){
-      if (isset($this->base_fields[$thing])) {
-        return $this->base_fields[$thing];
+      if (isset($this->meta[$thing])) {
+        $value = $this->meta[$thing];
       } else if (isset(static::$fields[$thing]['default'])) {
-        return static::$fields[$thing]['default'];
+        $value = static::$fields[$thing]['default'];
       } else { return null; }
-      
     } else {
-      return $this->base->{$thing};
+      if (static::$map_getters) {
+        $possible_getter_name = "get_$thing";
+        if (isset($this->{$possible_getter_name}) && is_callable([$this, $possible_getter_name])) {
+          $value = $this->{$possible_getter_name}();
+        } else { 
+          return $this->base->{$thing};
+        }
+      } else {
+        return $this->base->{$thing};
+      }
     }
+    $value = maybe_unserialize($value);
+    return $value;
+  }
+
+  function delete (string $meta, $value = '') {
+    $method = static::$content_type === 'post' ? 'delete_post_meta' : 'delete_user_meta';
+    $method($this->ID, $meta, $value);
+  }
+
+  function label_for ($thing) {
+    $value = $this->{$thing};
+    if (isset(static::$fields[$thing]) && isset(static::$fields[$thing]['options'])){
+      $value = (string) ($value);
+      if (isset(static::$fields[$thing]['options'][$value])){
+        $value = static::$fields[$thing]['options'][$value];
+      }
+    }
+    return $value;
   }
 
   function __set($thing, $value){
