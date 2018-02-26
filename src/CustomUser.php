@@ -62,7 +62,7 @@ class CustomUser extends BaseItem {
     } else { # ...unless it's a new user page and it doesn't exist yet
       return null;
     }
-  }
+  } 
 
   # returns true if the given user belongs to this class
   static function user_belongs($user){
@@ -70,15 +70,27 @@ class CustomUser extends BaseItem {
             (static::$allow_admin && in_array('administrator', $user->roles));
   }
 
+  public function is_a (string $role) {
+    return static::name() === $role || (static::$allow_admin && in_array('administrator', $this->roles));
+  }
+
+
+  static function find ($id, bool $build = true) {
+    $user = get_user_by('ID', $id);
+    if ($user === null) return null;
+    if (!static::user_belongs($user)) return null;
+    return new static($user, $build);
+  } 
+
   # fetches an user by given ID or the current one
-  function __construct($arg=false){
+  function __construct($arg = false, bool $build = true){
     if(!$arg){
       $arg = wp_get_current_user() ;
     } elseif(is_numeric($arg)){
       $arg = get_user_by('ID', $arg);
     }
     $this->base = $arg;
-    parent::__construct($this->base);
+    parent::__construct($this->base, $build);
   }
 
 }
