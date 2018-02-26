@@ -27,6 +27,13 @@ class CustomPost extends BaseItem {
     });
   }
 
+  static function find ($id, bool $build = true) {
+    $post = get_post($id);
+    if ($post === null) return null;
+    if ($post->post_type !== static::name()) return null;
+    return new static($post, $build);
+  } 
+
   function __construct($arg = false, $build = true){
     if(!$arg){
       $this->base = $GLOBALS['post'];
