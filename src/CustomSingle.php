@@ -31,7 +31,8 @@ trait CustomSingle  {
       'post_type' => static::$post_type,
       'post_status' => 'publish',
       'post_name' => static::$slug,
-      'post_title' => static::$title
+      'post_title' => isset(static::$title) ? static::$title : static::$slug,
+      'post_content' => isset(static::$content) ? static::$content : ''
     ]);
     $obj = new static($id);
     if (static::$fields && sizeof(static::$fields) > 0){
