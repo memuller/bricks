@@ -78,8 +78,13 @@ class BaseItem {
     $class = get_called_class();
     if (!static::$ajax_actions || sizeof(static::$ajax_actions) == 0) return ;
     foreach (static::$ajax_actions as $name => $method) {
+      $prefix = 'wp_ajax_';
       if (is_int($name)) $name = $method;
-      $action_name = sprintf("wp_ajax_%s_%s", static::name(), $name);
+      if (strpos($name, '_nopriv')) {
+        $name = str_replace('_nopriv', '', $name);
+        $prefix .= 'nopriv_';  
+      }
+      $action_name = sprintf("%s_%s_%s", $prefix, static::name(), $name);
       add_action($action_name, [$class, $method]);
     }
   }
@@ -96,7 +101,7 @@ class BaseItem {
           $options['callback'] = function($request) use ($class, $callback) {
             $params = $request->get_url_params();
             $data = $request->get_body_params();
-            call_user_func_array($callback, [$params, $data]);
+            call_user_func_array($callback, [$params, $data, $request]);
           };
           register_rest_route("$namespace/$version", $route, $options);
         }
@@ -216,6 +221,7 @@ class BaseItem {
       # add parameters for each field
       foreach($field_names as $field_name){
         $parameters = static::$fields[$field_name];
+        if (isset($parameters['display']) && !$parameters['display']) continue;
         $parameters['id'] = $field_name;
         if(!isset($parameters['type'])){
           $parameters['type'] = 'text';
@@ -293,7 +299,7 @@ class BaseItem {
           $obj = new $klass($ID);
           $out = property_or_method($obj, $column);
           return $out ? $out : '—';
-        }, 10, 3);
+        }, 20, 3);
       }
     }
 
