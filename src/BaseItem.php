@@ -27,6 +27,7 @@ class BaseItem {
 
   static function setup_hooks(){
     $class = get_called_class();
+    
     if (static::$views && sizeof(static::$views) > 0) {
       if (static::$content_type == 'post') {
         add_filter('views_edit-'.static::name(), [$class, 'hook_views']);
@@ -103,9 +104,20 @@ class BaseItem {
     }
   }
 
+  static function belonging_to (string $field, $id) {
+    if(!isset(static::$belongs_to) || !isset(static::$belongs_to[$field])) return null;
+    if (!is_numeric($id)) $id = $id->ID;
+    $query = [
+      'meta_query' => [
+        [ 'key' => $field, 'value' => $id ]
+      ]
+    ];
+    return static::all($query);
+  }
+
   static function prepare_metaboxes(){
     $boxes = static::$boxes;
-    if (!$boxes || sizeof($boxes) == 0) {
+    if (sizeof($boxes) == 0 && $boxes != false) {
       if (!static::$fields || sizeof(static::$fields) == 0) return ;
       $box_name = "default";
       if (isset(static::$slug)) {
@@ -145,23 +157,45 @@ class BaseItem {
     if(!static::$belongs_to) return ;
     $class = get_called_class(); $namespace = get_namespace($class);
     $boxes = static::$boxes; $fields = static::$fields;
-
-    foreach(loopable(static::$belongs_to) as $parent){
-      $parent_class = sibling_class(ucfirst($parent), $class);
-      $fields[$parent] = [
-        'id'                => $parent_class::name(),
-        'name'              => $parent_class::label(),
-        'type'              => 'select',
-        'show_option_none'  => false,
-        'options_cb'        => function() use ($parent_class){
-          $posts = $parent_class::all();
-          $options = array();
-          foreach($posts as $post){
-            $options[$post->ID] = $post->title;
-          }
-          return $options;
+    foreach(loopable(static::$belongs_to) as $key => $value){
+      if (is_numeric($key)){
+        $parent = $value;
+        $options = [];
+      } else {
+        $parent = $key;
+        $options = $value;
+      }
+      if (!isset($fields[$parent])){
+        $parent_class_name = isset($options['class']) ? $options['class'] : to_camel_case($parent);
+        $parent_class = sibling_class($parent_class_name, $class);
+        $is_many = isset($options['many']) && $options['many'];
+        if (!$is_many) {
+          $fields[$parent] = [
+            'id'                => $parent_class::name(),
+            'name'              => $parent_class::label(),
+            'type'              => 'select',
+            'show_option_none'  => false,
+            'options_cb'        => function() use ($parent_class){
+              $posts = $parent_class::all();
+              $options = array();
+              foreach($posts as $post){
+                $options[$post->ID] = $post->title;
+              }
+              return $options;
+            }
+          ];
+        } else {
+          $fields[$parent] = [
+            'id'          => $parent_class::name(),
+            'name'        => $parent_class::label(),
+            'type'        => 'posts_search',
+            'model'       => $parent_class_name,
+            'repeatable'  => true,
+            'multiple'    => true,
+            'default'     => [] 
+          ];
         }
-      ];
+      }
     }
 
     static::$fields =& $fields;
@@ -286,7 +320,8 @@ class BaseItem {
       $all_meta = get_metadata(static::$content_type, $this->base->ID);
       foreach($all_meta as $field_name => $field_values){
         if(static::has_field($field_name)){
-          $this->base_fields[$field_name] = $field_values[0];
+          $is_multiple = isset(static::$fields[$field_name]['multiple']) && static::$fields[$field_name]['multiple'] === true;
+          $this->meta[$field_name] = $is_multiple ? loopable($field_values) : $field_values[0];
         }
       }
     }
@@ -336,9 +371,21 @@ class BaseItem {
       $this->base->{$thing} = $value;
       $this->save_base();
     } else {
+      $this->meta[$thing] = $value;
+      if (isset(static::$fields[$thing]['multiple']) && static::$fields[$thing]['multiple']) {
+        $this->delete($thing);
+        $this->push_meta($thing, $value);
+      }
       \update_metadata(static::$content_type, $this->base->ID, $thing, $value);
     }
     return $value;
+  }
+
+  function push_meta (string $key, $values) {
+    $values = loopable($values);
+    foreach ($values as $value) {
+      add_metadata(static::$content_type, $this->ID, $key, $value);
+    }
   }
 
   static function build_query_params($params = array(), $additional_params = false) {
