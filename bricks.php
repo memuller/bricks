@@ -2,8 +2,14 @@
   require_once 'src/BaseItem.php';
   require_once 'src/CustomUser.php';
   require_once 'src/CustomPost.php' ;
-	require_once 'src/CustomSingle.php';
-	
+  require_once 'src/CustomSingle.php';
+
+  if ( !defined('BRICKS_BASE_DIR') )
+    die( 'BRICKS_BASE_DIR should be defined; see the bootstrap.sample' );
+  require_once implode( DIRECTORY_SEPARATOR,
+    [ BRICKS_BASE_DIR, 'vendor/cmb2/cmb2/init.php' ]
+  );
+
 	function from_camel_case(string $str) {
     $str[0] = strtolower($str[0]);
     $func = create_function('$c', 'return "_" . strtolower($c[1]);');
@@ -17,7 +23,7 @@
     $func = create_function('$c', 'return strtoupper($c[1]);');
     return preg_replace_callback('/_([a-z])/', $func, $str);
 	}
-	
+
 	function pluralize (string $word) {
 		if ($word[sizeof($word)-1] != 's') $word .= 's';
 		return $word;
@@ -27,15 +33,15 @@
 		if ($word[sizeof($word)-1] == 's') $word = substr($word, 0, -1);
 		return $word;
 	}
-	
+
   function property_or_key($object, string $arg){
 		return is_array($object) ? $object[$arg] : $object->$arg ;
 	}
 
   function property_or_method($object, string $arg) {
-    return method_exists($object, $arg) ? $object->{$arg}() : $object->$arg; 
+    return method_exists($object, $arg) ? $object->{$arg}() : $object->$arg;
 	}
-	
+
 	function get_namespace(string $class){
 		$namespace = explode('\\', $class);
 		return $namespace[0];
@@ -95,18 +101,18 @@
       require_once $path;
     }
 	});
-	
+
   foreach(glob(implode(DIRECTORY_SEPARATOR, [BRICKS_BASE_DIR, 'models', '*.php'])) as $file){
     $path = explode(DIRECTORY_SEPARATOR, $file);
     $class_name =  explode('.', $path[sizeof($path)-1])[0] ;
     $class = BRICKS_NAMESPACE.'\\'.$class_name;
     $class::init();
 	}
-	
+
 	function maybe_decode ($data, $assoc = true) {
 		$unserialized = json_decode($data, $assoc);
-		return $unserialized !== null ? $unserialized : $data; 
+		return $unserialized !== null ? $unserialized : $data;
 	}
-	
+
 
 ?>
