@@ -122,7 +122,7 @@ class BaseItem {
 
   static function prepare_metaboxes(){
     $boxes = static::$boxes;
-    if (sizeof($boxes) == 0 && $boxes != false) {
+    if ( $boxes !== false && sizeof($boxes) == 0) {
       if (!static::$fields || sizeof(static::$fields) == 0) return ;
       $box_name = "default";
       if (isset(static::$slug)) {
