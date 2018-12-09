@@ -16,6 +16,11 @@ class CustomPost extends BaseItem {
         $params[$arg] = $klass::$$arg;
       }
     }
+
+    if ( !in_array( 'custom-fields' , $params['supports'] ) ){
+      array_push($params['supports'], 'custom-fields');
+    }
+
     $klass::$creation_parameters =& $params;
   }
 
@@ -32,7 +37,7 @@ class CustomPost extends BaseItem {
     if ($post === null) return null;
     if ($post->post_type !== static::name()) return null;
     return new static($post, $build);
-  } 
+  }
 
   function __construct($arg = false, $build = true){
     if(!$arg){
