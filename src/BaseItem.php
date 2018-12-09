@@ -6,7 +6,7 @@ class BaseItem {
   static  $fields = array(),
           $boxes = array(),
           $columns = array(), $hide_columns = array(),
-          $name, $label, $creation_parameters, 
+          $name, $label, $creation_parameters,
           $ajax_actions, $rest_actions, $filters, $views,
           $has_one = false, $has_many = false, $belongs_to = false,
           $map_getters = false;
@@ -27,7 +27,7 @@ class BaseItem {
 
   static function setup_hooks(){
     $class = get_called_class();
-    
+
     if (static::$views && sizeof(static::$views) > 0) {
       if (static::$content_type == 'post') {
         add_filter('views_edit-'.static::name(), [$class, 'hook_views']);
@@ -51,8 +51,8 @@ class BaseItem {
       if (isset($options['url'])) {
         if ($options['url'][0] == '&') {
           $url = $base_url.$options['url'];
-        } else { 
-          $url = $options['url']; 
+        } else {
+          $url = $options['url'];
         }
       } else {
         $filter_name = isset($options['filter']) ? $options['filter'] : $view;
@@ -67,7 +67,7 @@ class BaseItem {
       if ('?'.$_SERVER['QUERY_STRING'] == $url) {
         $current = 'current';
       } else { $current = ''; }
-      
+
       $link = sprintf('<a class="%s" href="%s">%s %s</a>', $current, $url, $options['label'], $found);
       $views[$view] = $link;
     }
@@ -82,7 +82,7 @@ class BaseItem {
       if (is_int($name)) $name = $method;
       if (strpos($name, '_nopriv')) {
         $name = str_replace('_nopriv', '', $name);
-        $prefix .= 'nopriv_';  
+        $prefix .= 'nopriv_';
       }
       $action_name = sprintf("%s_%s_%s", $prefix, static::name(), $name);
       add_action($action_name, [$class, $method]);
@@ -136,9 +136,7 @@ class BaseItem {
       }, ARRAY_FILTER_USE_BOTH);
 
       $boxes[$box_name] = [
-        'title' => '',
-        'show_title' => false,
-        'context' => 'after_editor',
+        'title' => ' ',
         'fields' => array_keys($fields)
       ];
     }
@@ -197,7 +195,7 @@ class BaseItem {
             'model'       => $parent_class_name,
             'repeatable'  => true,
             'multiple'    => true,
-            'default'     => [] 
+            'default'     => []
           ];
         }
       }
@@ -345,7 +343,7 @@ class BaseItem {
         $possible_getter_name = "get_$thing";
         if (isset($this->{$possible_getter_name}) && is_callable([$this, $possible_getter_name])) {
           $value = $this->{$possible_getter_name}();
-        } else { 
+        } else {
           return $this->base->{$thing};
         }
       } else {
@@ -405,7 +403,7 @@ class BaseItem {
     if (static::$content_type == 'post') {
       $default_params = [
         'post_type'     => static::name()
-      ]; 
+      ];
     } else {
       $default_params = [
         'role' => static::name()
