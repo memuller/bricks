@@ -23,6 +23,7 @@ class BaseItem {
     static::set_columns();
     static::hook_ajax_actions();
     static::hook_rest_actions();
+    static::register_meta();
   }
 
   static function setup_hooks(){
@@ -444,6 +445,18 @@ class BaseItem {
       return null;
     } else {
       return $result[0];
+    }
+  }
+
+  static function register_meta() {
+    if ( static::$fields ) {
+      foreach ( static::$fields as $field => $field_options ) {
+        $options = [
+          'single' => ! ( isset($field_options['multiple']) && $field_options['multiple'] ),
+          'show_in_rest' => ! ( isset($field_options['show_in_rest']) && $field_options['show_in_rest'] === false )
+        ];
+        register_meta( static::$content_type, $field, $options );
+      }
     }
   }
 }
