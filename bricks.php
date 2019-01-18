@@ -3,6 +3,7 @@
   require_once 'src/CustomUser.php';
   require_once 'src/CustomPost.php' ;
   require_once 'src/CustomSingle.php';
+  require_once 'src/Hookable.php';
 
   if ( !defined('BRICKS_BASE_DIR') )
     die( 'BRICKS_BASE_DIR should be defined; see the bootstrap.sample' );
