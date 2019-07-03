@@ -107,7 +107,9 @@
     $path = explode(DIRECTORY_SEPARATOR, $file);
     $class_name =  explode('.', $path[sizeof($path)-1])[0] ;
     $class = BRICKS_NAMESPACE.'\\'.$class_name;
-    $class::init();
+    if(method_exists($class, 'init')){
+      $class::init();
+    }
 	}
 
 	function maybe_decode ($data, $assoc = true) {
