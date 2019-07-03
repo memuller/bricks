@@ -9,6 +9,7 @@ class BaseItem {
           $name, $label, $creation_parameters,
           $ajax_actions, $rest_actions, $filters, $views,
           $has_one = false, $has_many = false, $belongs_to = false,
+          $build = true,
           $map_getters = false;
 
   public $base, $meta;
@@ -16,7 +17,7 @@ class BaseItem {
   static function init(){
     static::prepare_parameters();
     static::prepare_relationships();
-    static::create_content_type();
+    static::$build && static::create_content_type();
     static::prepare_metaboxes();
     static::setup_hooks();
     static::create_metaboxes();
@@ -34,7 +35,7 @@ class BaseItem {
         add_filter('views_edit-'.static::name(), [$class, 'hook_views']);
       } else {
         add_filter('views_users', function ($views) use ($class) {
-          if (!(isset($_GET['role'])) || $_GET['role'] != $klass::name()) return $views;
+          if (!(isset($_GET['role'])) || $_GET['role'] != $class::name()) return $views;
           return $class::hook_views($views);
         });
       }
@@ -182,6 +183,7 @@ class BaseItem {
             'options_cb'        => function() use ($parent_class){
               $posts = $parent_class::all();
               $options = array();
+              $post = null;
               foreach($posts as $post){
                 $options[$post->ID] = $post->title;
               }
@@ -460,4 +462,3 @@ class BaseItem {
     }
   }
 }
-?>
