@@ -25,12 +25,12 @@ class Bricks {
 
   private function initialize () {
     $this->load_libs();
-    $this->init_cmb2();
     $this->register_autoloader();
   }
 
   public function init(){
     $this->load_models();
+    $this->init_cmb2();
   }
 
   private function load_libs() {
