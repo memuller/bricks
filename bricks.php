@@ -18,9 +18,10 @@ class Bricks {
       define( 'BRICKS_LOADED', self::PRIORITY );
     }
 
-    $this->initialize();
-
-    add_action('init', [$this, 'init'], self::PRIORITY);
+    if (function_exists('add_action')) {
+      $this->initialize();
+      add_action('init', [$this, 'init'], self::PRIORITY);
+    }
   }
 
   private function initialize () {
